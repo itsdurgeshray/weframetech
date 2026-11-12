@@ -345,8 +345,9 @@ section[id],.form{scroll-margin-top:96px}
 @media (max-width:820px){
   .tl{max-width:520px;margin-top:36px}
   .tl ol{grid-template-columns:1fr;gap:4px}
-  .tl-track{left:26px;right:auto;top:28px;bottom:28px;width:4px;height:auto}
-  .tl-track i{width:auto;right:0;bottom:auto;height:calc(var(--p) * 25%);transition:height .6s cubic-bezier(.2,.7,.2,1)}
+  .tl-track{left:26px;right:auto;top:var(--t0,28px);bottom:auto;width:4px;height:var(--tlen,0px)}
+  .tl-track i{width:auto;right:0;bottom:auto;height:var(--fill,0px);transition:height .18s linear}
+  .tl-step{cursor:default}
   .tl-step{flex-direction:row;align-items:flex-start;text-align:left;gap:18px;padding:12px 0}
   .tl-txt{max-width:none;padding-top:4px}
   .tl-txt b{font-size:18px;line-height:22px}
@@ -402,6 +403,12 @@ html{-webkit-tap-highlight-color:transparent}
   .result h3{font-size:24px;line-height:28px}
   .closing{padding:64px 0}
   .stats{margin-top:16px}
+  .q-copy .claim.mini{display:block;min-height:0}
+  .claim.mini>img{top:0;left:0;width:100%;height:172px;object-fit:cover;object-position:56% 74%}
+  .claim.mini::before{background:linear-gradient(180deg,rgba(209,251,255,0) 64px,rgba(209,251,255,.92) 150px,#d1fbff 172px,#a3f6ff 72%,#6bf1ff 100%)}
+  .claim.mini .tx{max-width:none;padding:156px 20px 22px;gap:8px}
+  .claim.mini .tx b{font-size:20px;line-height:24px}
+  .claim.mini .tx span{color:var(--body)}
 }
 
 /* ---------- reveal ---------- */
@@ -1017,38 +1024,74 @@ html{-webkit-tap-highlight-color:transparent}
   const vsl = document.getElementById('vsl');
   wirePlayer(vsl, () => VSL_ID);
 
-  /* ---- how it works: timeline steps switch the video ---- */
+  /* ---- how it works: timeline ----
+     desktop: click a step to switch the video.
+     tablet/phone (vertical): the line fills with scroll and each node activates as it passes the reading line. */
   const hp = document.getElementById('hplayer');
   const tl = document.querySelector('.tl');
+  const track = tl.querySelector('.tl-track');
   const stps = [...document.querySelectorAll('.tl-step')];
+  const nodes = stps.map(b => b.querySelector('.tl-node'));
   let cur = 0;
   wirePlayer(hp, () => VIDEOS[cur]);
-  stps.forEach((b, i) => b.addEventListener('click', () => {
+  const setStep = i => {
     if (i === cur) return;
     cur = i;
     stps.forEach((x, k) => { x.setAttribute('aria-selected', k === i); x.classList.toggle('done', k < i); });
     tl.style.setProperty('--p', i);
     hp.querySelector('iframe')?.remove();
-    hp.setAttribute('aria-label', `Play video 0${i + 1}, ${b.querySelector('b').textContent}`);
-  }));
+    hp.setAttribute('aria-label', `Play video 0${i + 1}, ${stps[i].querySelector('b').textContent}`);
+  };
+  const vertical = () => matchMedia('(max-width:820px)').matches;
+  stps.forEach((b, i) => b.addEventListener('click', () => { if (!vertical()) setStep(i); }));
 
+  let t0 = 0, tlen = 0;
+  const measure = () => {
+    if (!vertical()) { tl.style.removeProperty('--t0'); tl.style.removeProperty('--tlen'); tl.style.removeProperty('--fill'); return; }
+    const base = tl.getBoundingClientRect().top;
+    const c = n => { const r = n.getBoundingClientRect(); return r.top + r.height / 2 - base; };
+    t0 = c(nodes[0]); tlen = c(nodes[nodes.length - 1]) - t0;
+    tl.style.setProperty('--t0', t0 + 'px');
+    tl.style.setProperty('--tlen', tlen + 'px');
+  };
+  const onTlScroll = () => {
+    if (!vertical()) return;
+    const line = innerHeight * 0.55;                       // reading line
+    const base = tl.getBoundingClientRect().top;
+    const fill = Math.max(0, Math.min(tlen, line - base - t0));
+    tl.style.setProperty('--fill', fill + 'px');
+    let i = 0;
+    nodes.forEach((n, k) => { const r = n.getBoundingClientRect(); if (r.top + r.height / 2 <= line + 1) i = k; });
+    setStep(i);
+  };
+  if (!FIGMA) {
+    const relayout = () => { measure(); onTlScroll(); };
+    addEventListener('scroll', onTlScroll, { passive:true });
+    addEventListener('resize', relayout);
+    document.fonts?.ready.then(relayout);
+    addEventListener('load', relayout);
+    relayout();
+  }
 
   /* ---- mobile sticky CTA: visible after the hero CTA leaves, hidden while the form or closing CTA is on screen ---- */
   const mbar = document.getElementById('mbar');
   if (mbar && !FIGMA) {
-    const seen = new Map();
-    const watch = [document.querySelector('.hero-cta'), document.getElementById('qualify'), document.querySelector('.closing')];
+    const heroCta = document.querySelector('.hero-cta');
+    const zones = [document.getElementById('qualify'), document.querySelector('.closing')];
+    const inline = [...document.querySelectorAll('.hiw-cta, .team-cta')];   // never show two identical buttons at once
+    const vis = (el, m = 0) => { const r = el.getBoundingClientRect(); return r.bottom > m && r.top < innerHeight - m; };
+    let last = null;
     const update = () => {
-      const heroGone = !seen.get(watch[0]) && watch[0].getBoundingClientRect().bottom < 0;
-      const on = heroGone && !seen.get(watch[1]) && !seen.get(watch[2]);
+      const on = heroCta.getBoundingClientRect().bottom < 0 && !zones.some(z => vis(z, innerHeight * .2)) && !inline.some(el => vis(el));
+      if (on === last) return;
+      last = on;
       mbar.classList.toggle('on', on);
       mbar.setAttribute('aria-hidden', !on);
       mbar.querySelector('a').tabIndex = on ? 0 : -1;
     };
-    new IntersectionObserver(es => { es.forEach(e => seen.set(e.target, e.isIntersecting)); update(); }, { threshold: 0 }).observe(watch[0]);
-    const io2 = new IntersectionObserver(es => { es.forEach(e => seen.set(e.target, e.isIntersecting)); update(); }, { rootMargin: '-20% 0px -20% 0px' });
-    io2.observe(watch[1]); io2.observe(watch[2]);
     addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
+    update();
   }
 
   /* ---- smooth scroll to the qualifier ---- */

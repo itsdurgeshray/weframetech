@@ -24,5 +24,5 @@ window.WFT_CONFIG = {
 
   // YouTube video IDs
   VSL_ID: '',                         // hero VSL
-  VIDEOS: ['', '', '', '', ''],       // how-it-works, one per timeline step
+  EXPLAINER_ID: '',                   // "Watch the 7-Minute Video Before Applying" section
 };

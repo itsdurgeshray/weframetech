@@ -1,33 +1,55 @@
 'use client';
 
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react';
-import { QUESTIONS, NOT_FIT, CONTACT_PREFS, SUMMARY_KEYS, TOTAL_BARS, isVariant, nextStep, type Answers, type Gate, type Option, type Step } from '@/lib/qualifier';
+import { getOffer, DEFAULT_OFFER } from '@/lib/offers';
+import type { Answers, DetailField, MultiQuestion, Option, Question } from '@/lib/offers/types';
 import { COUNTRY_CODES, isValidPhone, toE164 } from '@/lib/phone';
 import { site } from '@/lib/site';
+import { GateMeter, LockIcon, useGate } from '@/components/gate/Gate';
 
 const BackIcon = () => <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>;
 const ArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
 );
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const URL_LIKE = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i;
 const post = (url: string, body: unknown) =>
   fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
-type Errors = { name?: boolean; email?: boolean; pref?: boolean; phone?: string };
+const CONTACT_PREFS: Option[] = [
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'call', label: 'Phone Call' },
+  { value: 'email', label: 'Email' },
+];
 
-export default function Qualifier() {
+type Errors = { name?: boolean; company?: boolean; email?: boolean; website?: boolean; pref?: boolean; phone?: string };
+
+/** The gated qualifier for any offer. Questions, gates and details fields come from lib/offers/<slug>. */
+export default function Qualifier({ slug }: { slug: string }) {
+  const offer = getOffer(slug) ?? DEFAULT_OFFER;
+  const Q = offer.qualifier;
+  const first = Q.questions[0].id;
+  const totalBars = Math.max(...Q.questions.map((q) => q.bar)) + 1;
+  const has = (f: DetailField) => Q.details.fields.includes(f);
+
+  const { unlocked, nudge } = useGate();
   const formRef = useRef<HTMLFormElement>(null);
-  const [cur, setCur] = useState<string>('background');
-  const history = useRef<string[]>(['background']);
+  const [cur, setCur] = useState<string>(first);
+  const history = useRef<string[]>([first]);
   const [answers, setAnswers] = useState<Answers>({});
-  const [labels, setLabels] = useState<Answers>({});
-  const [gate, setGate] = useState<Gate>('background');
+  const [labels, setLabels] = useState<Record<string, string[]>>({});
+  const [gate, setGate] = useState<string>(Object.keys(Q.notFit)[0]);
   const lock = useRef(false);
   const mounted = useRef(false);
 
+  // multi-select drafts (chips toggled before Continue)
+  const [multi, setMulti] = useState<Record<string, string[]>>({});
+  const [multiErr, setMultiErr] = useState('');
+
   // details step
   const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [website, setWebsite] = useState('');
   const [cc, setCc] = useState('+91');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -50,14 +72,13 @@ export default function Qualifier() {
   const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- navigation ---------- */
-  const show = (id: string) => setCur(id);
-  const go = (id: string) => { history.current.push(id); show(id); };
+  const go = (id: string) => { history.current.push(id); setCur(id); };
   const back = () => {
     history.current.pop();
-    show(history.current[history.current.length - 1] ?? 'background');
+    setMultiErr('');
+    setCur(history.current[history.current.length - 1] ?? first);
   };
 
-  // focus the new step's heading and keep the card in view
   useEffect(() => {
     if (!mounted.current) { mounted.current = true; return; }
     const form = formRef.current;
@@ -70,20 +91,41 @@ export default function Qualifier() {
     if (r.top < 0 || r.top > innerHeight * 0.4) form.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' });
   }, [cur]);
 
-  /* ---------- questions ---------- */
-  const answer = (step: string, opt: Option) => {
+  const advance = (step: string, nextA: Answers) => {
+    const n = Q.next(step, nextA);
+    if ('notFit' in n) { setGate(n.notFit); history.current.push('no'); setCur('no'); }
+    else go(n.go);
+  };
+
+  /* ---------- single-answer questions auto-advance ---------- */
+  const answer = (q: Question, opt: Option) => {
     if (lock.current) return;
-    const nextA = { ...answers, [step]: opt.value };
-    if (step === 'idea' && answers.idea !== opt.value) delete nextA.idea2; // follow-up depends on this answer
+    const nextA = { ...answers, [q.id]: opt.value };
+    // a follow-up keyed on this answer must be re-asked
+    Q.questions.forEach((x) => { if (x.kind === 'variant' && x.dependsOn === q.id && answers[q.id] !== opt.value) delete nextA[x.id]; });
     setAnswers(nextA);
-    setLabels((l) => ({ ...l, [step]: opt.label }));
+    setLabels((l) => ({ ...l, [q.id]: [opt.label] }));
     lock.current = true;
-    setTimeout(() => {
-      lock.current = false;
-      const n = nextStep(step, nextA);
-      if ('notFit' in n) { setGate(n.notFit); history.current.push('no'); show('no'); }
-      else go(n.go);
-    }, reduce() ? 0 : 280);
+    setTimeout(() => { lock.current = false; advance(q.id, nextA); }, reduce() ? 0 : 280);
+  };
+
+  /* ---------- multi-select questions ---------- */
+  const toggle = (q: MultiQuestion, value: string) => {
+    setMultiErr('');
+    setMulti((m) => {
+      const picked = m[q.id] ?? [];
+      if (picked.includes(value)) return { ...m, [q.id]: picked.filter((v) => v !== value) };
+      if (q.max && picked.length >= q.max) { setMultiErr(`You can pick up to ${q.max}. Unselect one to change it.`); return m; }
+      return { ...m, [q.id]: [...picked, value] };
+    });
+  };
+  const continueMulti = (q: MultiQuestion) => {
+    const picked = multi[q.id] ?? [];
+    if (!picked.length) { setMultiErr('Select at least one option to continue.'); return; }
+    const nextA = { ...answers, [q.id]: picked.join('|') };
+    setAnswers(nextA);
+    setLabels((l) => ({ ...l, [q.id]: q.options.filter((o) => picked.includes(o.value)).map((o) => o.label) }));
+    advance(q.id, nextA);
   };
 
   /* ---------- resend countdown ---------- */
@@ -110,15 +152,16 @@ export default function Qualifier() {
   const toVerify = async () => {
     const e: Errors = {
       name: name.trim().length < 2,
-      email: !EMAIL.test(email.trim()),
-      pref: !pref,
+      company: has('company') && company.trim().length < 2,
       phone: isValidPhone(cc, phone) ? undefined : 'Please enter a valid phone number.',
+      email: !EMAIL.test(email.trim()),
+      website: has('website') && website.trim() !== '' && !URL_LIKE.test(website.trim()),
+      pref: has('contactPref') && !pref,
     };
     setErrors(e);
     const form = formRef.current!;
-    if (e.name) return form.querySelector<HTMLElement>('#f-name')?.focus();
-    if (e.phone) return form.querySelector<HTMLElement>('#f-phone')?.focus();
-    if (e.email) return form.querySelector<HTMLElement>('#f-email')?.focus();
+    const firstBad = (['name', 'company', 'phone', 'email', 'website'] as const).find((k) => e[k]);
+    if (firstBad) return form.querySelector<HTMLElement>(`#f-${firstBad}`)?.focus();
     if (e.pref) return form.querySelector<HTMLElement>('#pref-field .ans')?.focus();
     setSending(true);
     try {
@@ -134,15 +177,17 @@ export default function Qualifier() {
   const finish = async (token: string) => {
     setVerifyLabel('Submitting...');
     const lead = {
-      background: answers.background, income: answers.income, idea: answers.idea, idea_detail: answers.idea2,
-      revenue_goal: answers.revenue, invest_ready: answers.invest, invest_level: answers.invest2, start: answers.start,
-      name, email, contact_pref: pref,
+      offer: offer.slug, answers,
+      name, email,
+      ...(has('company') ? { company } : {}),
+      ...(has('website') ? { website } : {}),
+      ...(has('contactPref') ? { contact_pref: pref } : {}),
     };
     try { await post('/api/lead', { lead, token }); } catch { /* the thank-you page still loads */ }
     try {
-      sessionStorage.setItem('wft_lead', JSON.stringify({ name, email, labels: SUMMARY_KEYS.map((k) => labels[k]).filter(Boolean) }));
+      sessionStorage.setItem('wft_lead', JSON.stringify({ name, email, labels: Q.summary.flatMap((k) => labels[k] ?? []) }));
     } catch { /* storage blocked: thank-you page falls back to generic copy */ }
-    location.href = '/thank-you';
+    location.href = offer.thankYouPath;
   };
 
   const verifyCode = async (code = digits.join('')) => {
@@ -184,7 +229,7 @@ export default function Qualifier() {
     setTimeout(() => { const el = formRef.current?.querySelector<HTMLInputElement>('#f-phone'); el?.focus(); el?.select(); }, 30);
   };
 
-  /* ---------- six code boxes: type, paste or SMS autofill into any box ---------- */
+  /* ---------- six code boxes ---------- */
   const setCode = (next: string[], focusAt: number) => {
     setDigits(next);
     setOtpErr('');
@@ -213,93 +258,129 @@ export default function Qualifier() {
     else if (e.key === 'ArrowRight' && k < 5) digitRefs.current[k + 1]?.focus();
   };
 
-  /* ---------- submit (details CTA sends the code, verify CTA submits) ---------- */
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (cur === 'contact') toVerify();
     else if (cur === 'verify') verifyCode();
   };
 
-  const nextOnEnter = (id: string) => (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') { e.preventDefault(); formRef.current?.querySelector<HTMLElement>(id)?.focus(); }
+  const order = (['name', 'company', 'phone', 'email', 'website'] as const).filter((f) => has(f));
+  const nextOnEnter = (f: string) => (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    const i = order.indexOf(f as (typeof order)[number]);
+    if (i >= 0 && i < order.length - 1) { e.preventDefault(); formRef.current?.querySelector<HTMLElement>(`#f-${order[i + 1]}`)?.focus(); }
   };
 
   /* ---------- render ---------- */
-  const barFor = () => {
-    if (cur === 'no') return TOTAL_BARS;
-    if (cur === 'contact' || cur === 'verify') return TOTAL_BARS;
-    return QUESTIONS.find((q) => q.id === cur)?.bar ?? 1;
-  };
-  const filled = barFor();
+  const filled = cur === 'no' || cur === 'contact' || cur === 'verify' ? totalBars : Q.questions.find((q) => q.id === cur)?.bar ?? 1;
 
-  const opts = (step: string, options: Option[]) => (
+  const singleOpts = (q: Question, options: Option[]) => (
     <div className="opts stack" role="group">
       {options.map((o) => (
-        <button key={o.value} type="button" className="ans" data-name={step} data-value={o.value}
-          aria-pressed={answers[step] === o.value ? 'true' : 'false'} onClick={() => answer(step, o)}>
+        <button key={o.value} type="button" className="ans" data-name={q.id} data-value={o.value}
+          aria-pressed={answers[q.id] === o.value ? 'true' : 'false'} onClick={() => answer(q, o)}>
           {o.label}
         </button>
       ))}
     </div>
   );
 
-  const renderStep = (s: Step) => {
-    const cls = `step${cur === s.id ? ' cur' : ''}`;
-    if (isVariant(s)) {
+  const backBtn = <div className="step-foot"><button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button></div>;
+
+  const renderStep = (q: Question) => {
+    const cls = `step${cur === q.id ? ' cur' : ''}`;
+    if (q.kind === 'variant') {
       return (
-        <div key={s.id} role="group" className={cls} data-step={s.id} data-bar={s.bar}>
-          {Object.entries(s.variants).map(([key, v]) => (
-            <div key={key} className={`variant${answers[s.dependsOn] === key ? ' cur' : ''}`} data-for={key}>
+        <div key={q.id} role="group" className={cls} data-step={q.id} data-bar={q.bar}>
+          {Object.entries(q.variants).map(([key, v]) => (
+            <div key={key} className={`variant${answers[q.dependsOn] === key ? ' cur' : ''}`} data-for={key}>
               <div className="step-head">
-                <span className="count">{s.count}</span>
+                <span className="count">{q.count}</span>
                 <h3 tabIndex={-1}>{v.title}</h3>
                 {v.help && <p>{v.help}</p>}
               </div>
-              <div style={{ marginTop: '28px' }}>{opts(s.id, v.options)}</div>
+              <div style={{ marginTop: '28px' }}>{singleOpts(q, v.options)}</div>
             </div>
           ))}
-          <div className="step-foot"><button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button></div>
+          {backBtn}
+        </div>
+      );
+    }
+    if (q.kind === 'multi') {
+      const picked = multi[q.id] ?? [];
+      return (
+        <div key={q.id} role="group" className={`${cls} multi`} data-step={q.id} data-bar={q.bar}>
+          <div className="step-head">
+            <span className="count">{q.count}</span>
+            <h3 tabIndex={-1}>{q.title}</h3>
+            {q.help && <p>{q.help}{q.max ? <span className="pick-count"> {picked.length}/{q.max} selected</span> : picked.length ? <span className="pick-count"> {picked.length} selected</span> : null}</p>}
+          </div>
+          <div className="opts chips" role="group" aria-label={q.title}>
+            {q.options.map((o) => {
+              const on = picked.includes(o.value);
+              return (
+                <button key={o.value} type="button" className="ans" data-name={q.id} data-value={o.value} aria-pressed={on ? 'true' : 'false'}
+                  disabled={!on && !!q.max && picked.length >= q.max} onClick={() => toggle(q, o.value)}>
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+          <span className="multi-err" role="alert">{cur === q.id ? multiErr : ''}</span>
+          <div className="step-foot">
+            <button type="button" className="btn" onClick={() => continueMulti(q)} disabled={!picked.length}>Continue <ArrowIcon /></button>
+            {q.back !== false && <button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button>}
+          </div>
         </div>
       );
     }
     return (
-      <div key={s.id} role="group" className={cls} data-step={s.id} data-bar={s.bar}>
+      <div key={q.id} role="group" className={cls} data-step={q.id} data-bar={q.bar}>
         <div className="step-head">
-          <span className="count">{s.count}</span>
-          <h3 tabIndex={-1}>{s.title}</h3>
-          {s.help && <p>{s.help}</p>}
+          <span className="count">{q.count}</span>
+          <h3 tabIndex={-1}>{q.title}</h3>
+          {q.help && <p>{q.help}</p>}
         </div>
-        {opts(s.id, s.options)}
-        {s.back !== false && <div className="step-foot"><button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button></div>}
+        {singleOpts(q, q.options)}
+        {q.back !== false && backBtn}
       </div>
     );
   };
 
-  const nf = NOT_FIT[gate];
+  const nf = Q.notFit[gate] ?? Object.values(Q.notFit)[0];
+  const clear = (k: keyof Errors) => setErrors((x) => ({ ...x, [k]: undefined }));
 
   return (
-    <form className="form glass rv d1" id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
-      <div className="in">
+    <form className={`form glass rv d1${unlocked ? '' : ' locked'}`} id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
+      <div className="in" inert={!unlocked}>
         <div className="prog" aria-hidden="true">
-          {Array.from({ length: TOTAL_BARS }, (_, k) => <i key={k} className={k < filled ? 'on' : undefined}></i>)}
+          {Array.from({ length: totalBars }, (_, k) => <i key={k} className={k < filled ? 'on' : undefined}></i>)}
         </div>
 
-        {QUESTIONS.map(renderStep)}
+        {Q.questions.map(renderStep)}
 
         {/* Final step: details (qualified) */}
-        <div role="group" className={`step${cur === 'contact' ? ' cur' : ''}`} data-step="contact" data-bar="7">
+        <div role="group" className={`step${cur === 'contact' ? ' cur' : ''}`} data-step="contact" data-bar={totalBars}>
           <div className="step-head">
             <span className="count">Final step</span>
             <h3 tabIndex={-1}>You May Be A Good Fit</h3>
-            <p>Based on your answers, you appear to fit the profile of the healthcare professionals we partner with. Leave your details below and our team will review your information before reaching out.</p>
+            <p>{Q.details.intro}</p>
           </div>
           <div className="fields">
             <div className={`field full${errors.name ? ' bad' : ''}`}>
               <label htmlFor="f-name">Name</label>
               <input id="f-name" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" placeholder="Enter your name" required
-                value={name} onChange={(e) => { setName(e.target.value); setErrors((x) => ({ ...x, name: false })); }} onKeyDown={nextOnEnter('#f-phone')} />
+                value={name} onChange={(e) => { setName(e.target.value); clear('name'); }} onKeyDown={nextOnEnter('name')} />
               <span className="err">Please add your name.</span>
             </div>
+            {has('company') && (
+              <div className={`field full${errors.company ? ' bad' : ''}`}>
+                <label htmlFor="f-company">Company Name</label>
+                <input id="f-company" name="company" autoComplete="organization" enterKeyHint="next" placeholder="Enter your company name" required
+                  value={company} onChange={(e) => { setCompany(e.target.value); clear('company'); }} onKeyDown={nextOnEnter('company')} />
+                <span className="err">Please add your company name.</span>
+              </div>
+            )}
             <div className={`field full phone-field${errors.phone ? ' bad' : ''}`} id="phone-field">
               <label htmlFor="f-phone">Phone Number</label>
               <div className="phone">
@@ -308,28 +389,38 @@ export default function Qualifier() {
                 </select>
                 <span className="sep" aria-hidden="true"></span>
                 <input id="f-phone" name="phone" type="tel" inputMode="numeric" autoComplete="tel-national" enterKeyHint="next" placeholder="Enter your phone number" required
-                  value={phone} onChange={(e) => { setPhone(e.target.value); setErrors((x) => ({ ...x, phone: undefined })); }} onKeyDown={nextOnEnter('#f-email')} />
+                  value={phone} onChange={(e) => { setPhone(e.target.value); clear('phone'); }} onKeyDown={nextOnEnter('phone')} />
               </div>
               <span className="err" id="phone-err" role="alert">{errors.phone || 'Please enter a valid phone number.'}</span>
             </div>
             <div className={`field full${errors.email ? ' bad' : ''}`}>
               <label htmlFor="f-email">Email Address</label>
-              <input id="f-email" name="email" type="email" inputMode="email" autoCapitalize="off" spellCheck="false" autoComplete="email" enterKeyHint="go" placeholder="Enter your email" required
-                value={email} onChange={(e) => { setEmail(e.target.value); setErrors((x) => ({ ...x, email: false })); }} />
+              <input id="f-email" name="email" type="email" inputMode="email" autoCapitalize="off" spellCheck="false" autoComplete="email" enterKeyHint={has('website') ? 'next' : 'go'} placeholder="Enter your email" required
+                value={email} onChange={(e) => { setEmail(e.target.value); clear('email'); }} onKeyDown={nextOnEnter('email')} />
               <span className="err">Please use a valid email address.</span>
             </div>
-            <div className={`field full pref-field${errors.pref ? ' bad' : ''}`} id="pref-field">
-              <span className="lbl" id="pref-lbl">How would you prefer us to contact you?</span>
-              <div className="opts" role="group" aria-labelledby="pref-lbl">
-                {CONTACT_PREFS.map((o) => (
-                  <button key={o.value} type="button" className="ans" data-name="contact_pref" data-value={o.value}
-                    aria-pressed={pref === o.value ? 'true' : 'false'} onClick={() => { setPref(o.value); setErrors((x) => ({ ...x, pref: false })); }}>
-                    {o.label}
-                  </button>
-                ))}
+            {has('website') && (
+              <div className={`field full${errors.website ? ' bad' : ''}`}>
+                <label htmlFor="f-website">Company Website</label>
+                <input id="f-website" name="website" type="url" inputMode="url" autoCapitalize="off" spellCheck="false" autoComplete="url" enterKeyHint="go" placeholder="Enter your company website"
+                  value={website} onChange={(e) => { setWebsite(e.target.value); clear('website'); }} />
+                <span className="err">Please check the website address.</span>
               </div>
-              <span className="err">Please choose how we should contact you.</span>
-            </div>
+            )}
+            {has('contactPref') && (
+              <div className={`field full pref-field${errors.pref ? ' bad' : ''}`} id="pref-field">
+                <span className="lbl" id="pref-lbl">How would you prefer us to contact you?</span>
+                <div className="opts" role="group" aria-labelledby="pref-lbl">
+                  {CONTACT_PREFS.map((o) => (
+                    <button key={o.value} type="button" className="ans" data-name="contact_pref" data-value={o.value}
+                      aria-pressed={pref === o.value ? 'true' : 'false'} onClick={() => { setPref(o.value); clear('pref'); }}>
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="err">Please choose how we should contact you.</span>
+              </div>
+            )}
           </div>
           <div className="step-foot">
             <button type="submit" className="btn" id="send-btn" aria-busy={sending}>
@@ -341,7 +432,7 @@ export default function Qualifier() {
         </div>
 
         {/* Verify phone by OTP */}
-        <div role="group" className={`step${cur === 'verify' ? ' cur' : ''}`} data-step="verify" data-bar="7">
+        <div role="group" className={`step${cur === 'verify' ? ' cur' : ''}`} data-step="verify" data-bar={totalBars}>
           <div className="step-head">
             <span className="count">One last check</span>
             <h3 tabIndex={-1}>Verify Your Number</h3>
@@ -374,11 +465,21 @@ export default function Qualifier() {
           <h3 tabIndex={-1} data-nf-title="">{nf.title}</h3>
           <p data-nf-text="">{nf.text}</p>
           <div className="step-foot" style={{ marginTop: '8px' }}>
-            <a className="btn" href="#how">Watch the 7-minute video</a>
+            <a className="btn" href="#how">{Q.notFitCta ?? 'Watch the video'}</a>
             <button type="button" className="back" data-back="" onClick={back}><BackIcon />Change my answer</button>
           </div>
         </div>
       </div>
+
+      {!unlocked && (
+        <div className="lock-panel" role="region" aria-labelledby="lock-title">
+          <span className="lock-orb"><LockIcon /></span>
+          <h3 id="lock-title">Watch The Video To Unlock</h3>
+          <p id="gate-hint">This application opens once you&apos;ve watched {site.unlockPercent}% of the video. It covers the model, investment and real client results, so you know exactly what you&apos;re applying for.</p>
+          <GateMeter compact />
+          <button type="button" className="btn" onClick={nudge}>Watch the video <ArrowIcon /></button>
+        </div>
+      )}
     </form>
   );
 }

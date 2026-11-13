@@ -8,7 +8,7 @@ import QualifyLink from './QualifyLink';
  * Visible once the hero CTA has scrolled away; steps aside while the form, the closing CTA
  * or any in-page "See if you qualify" button is on screen.
  */
-export default function StickyBar() {
+export default function StickyBar({ note }: { note: string }) {
   const [on, setOn] = useState(false);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function StickyBar() {
         See if you qualify
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
       </QualifyLink>
-      <small>Takes 60 seconds. For doctors and healthcare professionals.</small>
+      <small>{note}</small>
     </div>
   );
 }

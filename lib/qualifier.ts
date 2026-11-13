@@ -1,35 +1,12 @@
 /**
- * Qualification flow, copy from "offer 2 - VSL copy" (6 questions with gates).
- * Edit questions, options and Not a Fit messages here; the form renders from this file.
+ * Telehealth qualification flow, copy from "offer 2 - VSL copy" (6 questions with gates).
  */
 
-export type Option = { value: string; label: string };
-
-export type Question = {
-  id: string;
-  bar: number;          // which progress segment this step fills up to
-  count: string;        // "Question 1 of 6"
-  title: string;
-  help?: string;
-  options: Option[];
-  back?: boolean;       // show the Back button (all but the first step)
-};
-
-export type VariantQuestion = {
-  id: string;
-  bar: number;
-  count: string;
-  /** keyed by the answer of `dependsOn` */
-  dependsOn: string;
-  variants: Record<string, { title: string; help?: string; options: Option[] }>;
-};
-
-export type Step = Question | VariantQuestion;
-export const isVariant = (s: Step): s is VariantQuestion => 'variants' in s;
+import type { Answers, Next, Option, Question } from '@/lib/offers/types';
 
 const o = (value: string, label: string): Option => ({ value, label });
 
-export const QUESTIONS: Step[] = [
+export const QUESTIONS: Question[] = [
   {
     id: 'background', bar: 1, count: 'Question 1 of 6', back: false,
     title: 'What best describes your professional background?',
@@ -66,7 +43,7 @@ export const QUESTIONS: Step[] = [
     ],
   },
   {
-    id: 'idea2', bar: 3, count: 'Question 3 of 6', dependsOn: 'idea',
+    id: 'idea2', kind: 'variant', bar: 3, count: 'Question 3 of 6', dependsOn: 'idea',
     variants: {
       yes: {
         title: 'What do you want to build?',
@@ -158,9 +135,7 @@ export const QUESTIONS: Step[] = [
   },
 ];
 
-export type Gate = 'background' | 'income' | 'idea2' | 'revenue' | 'invest' | 'start';
-
-export const NOT_FIT: Record<Gate, { title: string; text: string }> = {
+export const NOT_FIT: Record<string, { title: string; text: string }> = {
   background: { title: 'Not a Fit', text: 'Thanks for your interest. At this stage, our partnership is primarily designed for doctors and healthcare professionals looking to build or scale a healthcare business.' },
   income: { title: 'Not a Fit', text: 'Our current partnership model is designed for healthcare professionals with an established income and the ability to invest in building a new venture.' },
   idea2: { title: 'Not a Fit', text: 'We currently focus on healthcare ventures where our technology, marketing and execution capabilities can directly support the business.' },
@@ -169,8 +144,6 @@ export const NOT_FIT: Record<Gate, { title: string; text: string }> = {
   start: { title: 'Not a Fit Right Now', text: "We currently work with partners who are ready to actively start building their venture in the near term. You're welcome to come back when you're closer to starting." },
 };
 
-export type Answers = Record<string, string>;
-export type Next = { go: string } | { notFit: Gate };
 
 /** Where to go after answering `step`. */
 export function nextStep(step: string, a: Answers): Next {
@@ -187,10 +160,3 @@ export function nextStep(step: string, a: Answers): Next {
     default: return { go: 'contact' };
   }
 }
-
-/** Answers shown as chips on the thank-you page, in order. */
-export const SUMMARY_KEYS = ['background', 'income', 'idea2', 'revenue', 'invest2', 'start'];
-
-export const CONTACT_PREFS: Option[] = [o('whatsapp', 'WhatsApp'), o('call', 'Phone Call'), o('email', 'Email')];
-
-export const TOTAL_BARS = 7;

@@ -1,6 +1,15 @@
-# WeframeTech Telehealth VSL
+# WeframeTech VSL Funnels
 
-Next.js 16 (App Router) build of the locked VSL landing page and qualifier.
+Next.js 16 (App Router). One locked design, three offers:
+
+| Offer | URL | Copy + questions |
+| --- | --- | --- |
+| Telehealth venture partnership | `/` and `/telehealth` | `lib/offers/telehealth.tsx`, `lib/qualifier.ts` |
+| Manufacturing: own sales channel | `/manufacturing-sales-channel` | `lib/offers/manufacturing-sales-channel.tsx` |
+| Manufacturing: AI growth system | `/manufacturing-ai-growth` | `lib/offers/manufacturing-ai-growth.tsx` |
+
+Each offer also has `/<offer>/thank-you`. To add an offer, copy one file in `lib/offers/`, change the copy,
+questions and gates, and register it in `lib/offers/index.ts`; the route appears automatically.
 
 ```bash
 npm install
@@ -54,6 +63,21 @@ Endpoints and response handling live in `lib/otp/providers/msg91.ts`; check them
 ### Adding another provider
 
 Create `lib/otp/providers/<name>.ts` exporting an `OtpProvider`, then register it in `lib/otp/index.ts`.
+
+## Video gate
+
+The qualifier and every "See if you qualify" CTA stay locked until the visitor has watched
+`NEXT_PUBLIC_UNLOCK_PERCENT` (default 70) of a YouTube video. Either of the offer's two videos counts,
+and each offer remembers its own progress.
+
+- Tracking uses the YouTube IFrame API and counts seconds actually played (normal speed up to 2x); jumping ahead does not count.
+- Set the offer's video IDs (see `.env.example`). Videos must allow embedding (YouTube > video > Allow embedding).
+- Progress is saved in localStorage, so returning visitors stay unlocked.
+- Locked CTAs scroll to the video and flash the progress meter. The form shows a lock panel.
+- Until a video ID is set, clicking play runs a labelled 20-second simulated playback so the flow can be previewed.
+- Set `NEXT_PUBLIC_UNLOCK_PERCENT=0` to switch the gate off. `?figma` mode always shows the form unlocked.
+
+Code: `components/gate/Gate.tsx` (state, meter) and `components/ui/VideoPlayer.tsx` (tracking).
 
 ## Lead flow
 

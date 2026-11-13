@@ -1,32 +1,11 @@
-import Nav from '@/components/ui/Nav';
-import StickyBar from '@/components/ui/StickyBar';
-import Reveal from '@/components/ui/Reveal';
-import Hero from '@/components/home/Hero';
-import QualifySection from '@/components/home/QualifySection';
-import Clients from '@/components/home/Clients';
-import HowItWorks from '@/components/home/HowItWorks';
-import Team from '@/components/home/Team';
-import Testimonials from '@/components/home/Testimonials';
-import Closing from '@/components/home/Closing';
-import Footer from '@/components/home/Footer';
+import type { Metadata } from 'next';
+import OfferPage from '@/components/home/OfferPage';
+import { DEFAULT_OFFER } from '@/lib/offers';
 import './home.css';
 
+/** "/" serves the telehealth offer (same page as /telehealth). */
+export const metadata: Metadata = DEFAULT_OFFER.meta;
+
 export default function HomePage() {
-  return (
-    <>
-      <Nav />
-      <main id="top">
-        <Hero />
-        <QualifySection />
-        <Clients />
-        <HowItWorks />
-        <Team />
-        <Testimonials />
-        <Closing />
-      </main>
-      <StickyBar />
-      <Footer />
-      <Reveal />
-    </>
-  );
+  return <OfferPage offer={DEFAULT_OFFER} />;
 }

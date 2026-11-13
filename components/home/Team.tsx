@@ -1,17 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 import QualifyLink from '@/components/ui/QualifyLink';
+import type { Offer } from '@/lib/offers';
 
-export default function Team() {
+export default function Team({ offer }: { offer: Offer }) {
+  const t = offer.team;
   return (
     <section className="sec" id="team" aria-labelledby="t-title">
       <div className="wrap">
         <div className="team-grid">
           <div className="story glass rv">
             <div className="in">
-              <h2 className="h2" id="t-title">We're Not Just A Tech Or Marketing Company. We're Your Venture-Building Partner.</h2>
-              <p>WeframeTech brings together technology, marketing, strategy, and execution to help healthcare professionals build their own digital healthcare businesses.</p>
-              <p>We partner with doctors, healthcare professionals, and healthcare founders who bring the healthcare expertise and manage operations. Our 50+ member team works across technology, product, marketing, and growth to build and launch your business.</p>
-              <p>You don't need to build a technology or marketing team from scratch. We become the execution team behind your venture, helping turn your healthcare expertise into a scalable digital healthcare business.</p>
-              <div className="sig"><span className="chip on"><span className="dot"></span>50+ in-house experts across technology, product &amp; marketing</span></div>
+              <h2 className="h2" id="t-title">{t.title}</h2>
+              {t.subtitle && <p className="story-sub">{t.subtitle}</p>}
+              {t.body}
+              <div className="sig"><span className="chip on"><span className="dot"></span>{t.chip}</span></div>
             </div>
           </div>
           <div className="photo glass rv d1">
@@ -21,12 +23,11 @@ export default function Team() {
             </div>
           </div>
         </div>
+        {t.statsTitle && <h3 className="h2 stats-title rv">{t.statsTitle}</h3>}
         <div className="stats">
-          <div className="stat glass sm rv"><div className="in"><b>50+</b><span>Experts across technology, marketing &amp; growth</span></div></div>
-          <div className="stat glass sm rv d1"><div className="in"><b>3-4 Months</b><span>Target launch timeline</span></div></div>
-          <div className="stat glass sm rv d2"><div className="in"><b>₹1-10 Cr</b><span>Monthly revenue ambition</span></div></div>
-          <div className="stat glass sm rv d1"><div className="in"><b>₹10-15 Lakh</b><span>Starting investment</span></div></div>
-          <div className="stat glass sm rv d2"><div className="in"><b>End-to-End</b><span>Strategy + Technology + Marketing + Execution</span></div></div>
+          {t.stats.map((s, i) => (
+            <div key={s.value} className={`stat glass sm rv${i ? ` d${((i - 1) % 2) + 1}` : ''}`}><div className="in"><b>{s.value}</b><span>{s.label}</span></div></div>
+          ))}
         </div>
         <div className="team-cta rv"><QualifyLink className="btn">See if you qualify</QualifyLink></div>
       </div>

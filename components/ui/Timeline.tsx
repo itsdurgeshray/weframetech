@@ -1,20 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
-const STEPS = [
-  { title: 'Discovery & Business Strategy', text: 'Understand your healthcare expertise, business idea, target market, goals and investment plan.' },
-  { title: 'Business Model & Roadmap', text: 'Define your brand positioning, product offering, revenue model and launch strategy.' },
-  { title: 'Technology & Platform Development', text: 'We build your telehealth platform, website, software and essential technology infrastructure.' },
-  { title: 'Marketing & Customer Acquisition', text: 'We implement marketing systems to generate awareness, attract customers and drive revenue.' },
-  { title: 'Launch, Operations & Scaling', text: 'You manage healthcare operations while we support technology, marketing and continuous growth.' },
-];
 
 /**
  * "How Our Partnership Works". The line fills with scroll and each node activates as the fill reaches it.
  * Horizontal on desktop, vertical (line from node 1 to node 5 only) at 820px and below.
  */
-export default function Timeline() {
+export default function Timeline({ steps }: { steps: { title: string; text: string }[] }) {
   const tlRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLElement>(null);
   const nodeRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -63,10 +56,10 @@ export default function Timeline() {
   }, []);
 
   return (
-    <div className="tl rv d1" ref={tlRef}>
+    <div className="tl rv d1" ref={tlRef} style={{ '--n': steps.length } as CSSProperties}>
       <div className="tl-track" aria-hidden="true"><i ref={fillRef}></i></div>
       <ol aria-labelledby="p-title">
-        {STEPS.map((s, k) => (
+        {steps.map((s, k) => (
           <li key={s.title}>
             <div className={`tl-step${k < cur ? ' done' : ''}`} aria-current={k === cur ? 'step' : undefined}>
               <span className="tl-node" aria-hidden="true" ref={(el) => { nodeRefs.current[k] = el; }}>0{k + 1}</span>

@@ -1,6 +1,7 @@
 'use client';
 
 import type { AnchorHTMLAttributes, MouseEvent } from 'react';
+import { LockIcon, useGate } from '@/components/gate/Gate';
 
 /**
  * Every "See if you qualify" CTA. Smooth-scrolls to the qualifier:
@@ -17,17 +18,25 @@ export function scrollToQualifier() {
   }, reduce ? 0 : 700);
 }
 
-export default function QualifyLink({ onClick, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) {
+/** Locked until the video gate opens: then it scrolls to the video and flashes the progress meter instead. */
+export default function QualifyLink({ onClick, className, children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const { unlocked, nudge } = useGate();
   return (
     <a
-      href="#qualify"
+      href={unlocked ? '#qualify' : '#vsl'}
       data-qualify=""
+      data-locked={unlocked ? undefined : ''}
+      aria-describedby={unlocked ? undefined : 'gate-hint'}
+      className={`${className ?? ''}${unlocked ? '' : ' is-locked'}`}
       {...props}
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         onClick?.(e);
-        scrollToQualifier();
+        if (unlocked) scrollToQualifier(); else nudge();
       }}
-    />
+    >
+      {!unlocked && <span className="lk"><LockIcon /></span>}
+      {children}
+    </a>
   );
 }

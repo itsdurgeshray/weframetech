@@ -1,18 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
-<meta name="theme-color" content="#ffffff">
-<title>Thank You | WeframeTech Telehealth Partnership</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="config.js"></script>
-<style>
-@font-face{font-family:"Season Mix";src:url("fonts/SeasonMix-TRIAL-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"Season Mix";src:url("fonts/SeasonMix-TRIAL-Medium.ttf") format("truetype");font-weight:500;font-display:swap}
+/* Thank-you page styles: ported 1:1 from the locked static design (thank-you.html). */
 :root{
   --ink:#1a2b22;--ink-2:#1a2b2e;--body:#4c5c5f;--muted:#748c90;
   --accent:#00818f;--accent-2:#009cad;--accent-3:#00a6b8;--deep:#004a52;--chip-ink:#0a3a40;
@@ -21,7 +7,7 @@
   --glass-shadow:2px 4px 24px rgba(46,154,160,.35);
   --btn:linear-gradient(180deg,#00818f 0%,#004a52 100%);--btn-inset:inset 0 1px 4px rgba(26,34,36,.24);
   --claim:linear-gradient(103.35deg,#6bf1ff 1.6%,#a3f6ff 17.4%,#d1fbff 43%,rgba(204,250,255,0) 75.9%);
-  --serif:"Season Mix",Georgia,serif;--sans:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:var(--font-season),"Season Mix",Georgia,serif;--sans:var(--font-geist),"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;
   --gutter:48px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -34,7 +20,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;ba
   radial-gradient(46% 40% at 50% 18%,rgba(107,241,255,.30),rgba(107,241,255,0) 70%),
   radial-gradient(30% 30% at 10% 10%,rgba(163,246,255,.35),rgba(163,246,255,0) 70%),
   radial-gradient(30% 30% at 90% 22%,rgba(209,251,255,.6),rgba(209,251,255,0) 70%)}
-body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("assets/cta-texture.png") center/1024px;opacity:.06}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("/assets/cta-texture.png") center/1024px;opacity:.06}
 
 .nav{display:flex;align-items:center;justify-content:space-between;max-width:1344px;width:100%;margin:0 auto;padding:0 var(--gutter);height:88px}
 .logo{position:relative;width:162px;height:26.63px;flex:none}
@@ -80,7 +66,7 @@ h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:52px;line
 .claim{position:relative;border:.6px solid var(--btn-line);border-radius:18px;overflow:hidden;min-height:180px;display:flex;align-items:center}
 .claim>img{position:absolute;z-index:0;top:-40%;left:36%;width:100%;height:140%;object-fit:cover}
 .claim::before{content:"";position:absolute;inset:0;z-index:1;background:var(--claim)}
-.claim::after{content:"";position:absolute;inset:0;z-index:1;background:url("assets/noise.png") top left/1024px;opacity:.06}
+.claim::after{content:"";position:absolute;inset:0;z-index:1;background:url("/assets/noise.png") top left/1024px;opacity:.06}
 .claim .tx{position:relative;z-index:2;padding:24px 28px;max-width:360px;display:flex;flex-direction:column;gap:8px}
 .claim b{font-family:var(--serif);font-weight:500;font-size:22px;line-height:26px;letter-spacing:-.2px;color:var(--deep)}
 .claim span{font-size:14px;line-height:19px;color:var(--body)}
@@ -113,75 +99,3 @@ h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:52px;line
   .next li{grid-template-columns:44px 1fr;padding:14px 0}
 }
 @media (prefers-reduced-motion:reduce){.orb,.orb svg{animation:none;stroke-dashoffset:0}}
-</style>
-</head>
-<body>
-<header class="nav">
-  <a href="index.html" class="logo" aria-label="WeframeTech home">
-    <img class="mk" src="assets/logo-mark.svg" width="47.4195" height="26.6307" alt="">
-    <img class="wd" src="assets/logo-word.svg" width="111.81" height="11.9351" alt="">
-  </a>
-  <a href="index.html" class="home"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Back to site</a>
-</header>
-
-<main>
-  <section class="head" aria-labelledby="ty-title">
-    <span class="orb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
-    <span class="chip"><span class="dot"></span>Application received. You're one step closer.</span>
-    <h1 id="ty-title">Thank You.</h1>
-    <p class="lede">We've received your application. Based on your answers, you may be a good fit for our healthcare venture partnership.</p>
-    <p class="lede">A member of the WeframeTech team will review your application and reach out within 24 hours.</p>
-    <div class="summary" data-summary></div>
-  </section>
-
-  <section class="book glass" aria-labelledby="book-title">
-    <div class="in">
-      <div>
-        <h2 id="book-title">Book Your Strategy Call</h2>
-        <p>Don't wait for our team to reach out. Choose a convenient time to speak with us and explore your healthcare business opportunity.</p>
-        <p>On the call, we'll discuss your business idea, revenue goals, investment, and how we can help you build and launch.</p>
-      </div>
-      <a class="btn" data-book href="#">Book your strategy call <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-      <p class="note" role="status">The booking link will be added here before launch.</p>
-    </div>
-  </section>
-
-  <section class="next" aria-labelledby="next-title">
-    <h3 id="next-title">What Happens Next</h3>
-    <ol>
-      <li><span class="n">01</span><div><b>We Review Your Application</b><span>Our team reviews your healthcare experience, business goals, investment readiness, and answers.</span></div></li>
-      <li><span class="n">02</span><div><b>Strategy Call</b><span>We discuss your idea, business model, revenue ambition, and the opportunity we see for your venture.</span></div></li>
-      <li><span class="n">03</span><div><b>Build Your Roadmap</b><span>If there's a strong fit, we outline how our 50+ person team can support your technology, marketing, and execution.</span></div></li>
-    </ol>
-  </section>
-
-  <section class="ready glass" aria-labelledby="ready-title">
-    <div class="in">
-      <h2 id="ready-title">Ready To Build Your Healthcare Business?</h2>
-      <p>You bring the healthcare expertise.<br><b>We bring the team, technology, marketing, and execution.</b></p>
-      <a class="btn" data-book href="#">Book your strategy call <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
-      <p class="note" role="status">The booking link will be added here before launch.</p>
-    </div>
-  </section>
-</main>
-
-<p class="foot">© 2026 WeframeTech. All rights reserved.</p>
-
-<script>
-(() => {
-  const C = window.WFT_CONFIG || {};
-  let lead = null;
-  try { lead = JSON.parse(sessionStorage.getItem('wft_lead') || 'null'); } catch (_) {}
-  const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-  if (lead && Array.isArray(lead.labels) && lead.labels.length)
-    document.querySelector('[data-summary]').innerHTML = lead.labels.map(l => `<span>${esc(l)}</span>`).join('');
-
-  const url = C.BOOKING_URL || '#';
-  document.querySelectorAll('[data-book]').forEach(a => {
-    if (url !== '#') { a.href = url; a.target = '_blank'; a.rel = 'noopener'; }
-    else a.addEventListener('click', e => { e.preventDefault(); a.parentElement.querySelector('.note').classList.add('on'); });
-  });
-})();
-</script>
-</body>
-</html>

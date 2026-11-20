@@ -5,7 +5,7 @@ import { getOffer, DEFAULT_OFFER } from '@/lib/offers';
 import type { Answers, DetailField, MultiQuestion, Option, Question } from '@/lib/offers/types';
 import { COUNTRY_CODES, isValidPhone, toE164 } from '@/lib/phone';
 import { inr } from '@/lib/offers/consult';
-import { NextStepNote, TrustStrip } from '@/components/consult/Consult';
+import { DueToday, TrustStrip } from '@/components/consult/Consult';
 
 const BackIcon = () => <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>;
 const ArrowIcon = () => (
@@ -69,7 +69,6 @@ export default function Qualifier({ slug }: { slug: string }) {
   const [payUrl, setPayUrl] = useState('');
   const [payDemo, setPayDemo] = useState(false);
   const [payErr, setPayErr] = useState('');
-  const [restored, setRestored] = useState(false);
   const formKey = `wft_form_${offer.slug}`;
   const checkoutKey = `wft_checkout_${offer.slug}`;
   const price = inr(offer.consult.price);
@@ -142,7 +141,6 @@ export default function Qualifier({ slug }: { slug: string }) {
   const reopenDetails = () => {
     history.current = [first, 'contact'];
     setSending(false);
-    setRestored(true);
     setCur('contact');
   };
   useEffect(() => {
@@ -315,8 +313,6 @@ export default function Qualifier({ slug }: { slug: string }) {
             <h3 tabIndex={-1}>You May Be A Good Fit</h3>
             <p>{Q.details.intro}</p>
           </div>
-          {restored && <p className="restored" role="status">Welcome back. Your answers are saved, so you can go straight to payment.</p>}
-          <NextStepNote consult={offer.consult} />
           <div className="fields">
             <div className={`field full${errors.name ? ' bad' : ''}`}>
               <label htmlFor="f-name">Name</label>
@@ -373,6 +369,7 @@ export default function Qualifier({ slug }: { slug: string }) {
               </div>
             )}
           </div>
+          <DueToday consult={offer.consult} />
           <div className="step-foot">
             <button type="submit" className="btn" id="send-btn" aria-busy={sending}>
               {sending ? 'Opening secure checkout...' : <><LockIcon />Continue to secure payment · {price}</>}
@@ -406,7 +403,7 @@ export default function Qualifier({ slug }: { slug: string }) {
           </div>
         </div>
 
-        <TrustStrip quote={cur === 'contact'} />
+        <TrustStrip />
       </div>
     </form>
   );

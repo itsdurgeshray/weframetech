@@ -748,7 +748,6 @@ html{-webkit-tap-highlight-color:transparent}
 @media (max-width:560px){.q-note{margin-top:14px}.q-note .important{padding:14px}}
 
 /* ================= checkout handoff ================= */
-.restored{font-size:14px;line-height:19px;color:var(--deep);padding:10px 14px;border-radius:12px;background:var(--cyan-tint);border:1px solid rgba(143,216,220,.8)}
 .pay-err{display:block;text-align:center;font-size:13px;margin-top:-8px}
 .pay-err:empty{display:none}
 .result.pay{align-items:center;text-align:center;justify-content:center;gap:16px;padding:24px 0}
@@ -764,3 +763,16 @@ html{-webkit-tap-highlight-color:transparent}
 .pay-fallback{font-size:13px;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){.pay-orb{animation:none}}
 .result.pay .otp-demo{align-self:center}
+
+/* client quote under the session card, only while the visitor fills in their details */
+.ap-quote{display:none;flex-direction:column;gap:12px;padding:18px 20px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(170,247,255,.2);margin-top:-12px}
+.apply[data-phase="details"] .ap-quote{display:flex;animation:stepIn .45s cubic-bezier(.2,.7,.2,1)}
+.ap-quote blockquote{font-family:var(--serif);font-weight:500;font-size:16px;line-height:23px;color:rgba(255,255,255,.94)}
+.ap-quote figcaption{display:flex;align-items:center;gap:10px;font-size:12.5px;line-height:16px;color:rgba(255,255,255,.62)}
+.ap-quote figcaption img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(170,247,255,.5)}
+.ap-quote b{display:block;font-size:13px;font-weight:600;color:#fff}
+@media (max-width:980px){
+  .apply>.in{grid-template-areas:"how" "form" "offer" "quote"}
+  .ap-quote{grid-area:quote;margin:0 10px 10px;border:0;background:radial-gradient(90% 90% at 100% 0%,rgba(107,241,255,.22),rgba(107,241,255,0) 60%),linear-gradient(165deg,#0b5c63 0%,#004a52 60%,#00353b 100%)}
+}
+@media (max-width:560px){.ap-quote{margin:0 6px 6px;padding:16px}}

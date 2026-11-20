@@ -1,5 +1,5 @@
 import Qualifier from '@/components/qualifier/Qualifier';
-import { OfferPanel } from '@/components/consult/Consult';
+import { OfferPanel, RailQuote } from '@/components/consult/Consult';
 import type { Offer } from '@/lib/offers';
 
 const Tick = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>;
@@ -38,6 +38,7 @@ export default function QualifySection({ offer }: { offer: Offer }) {
                 </ol>
               </div>
               <OfferPanel consult={offer.consult} className="ap-offer" />
+              <RailQuote />
             </aside>
             <Qualifier slug={offer.slug} />
           </div>

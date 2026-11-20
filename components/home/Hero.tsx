@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import QualifyLink from '@/components/ui/QualifyLink';
 import VideoPlayer from '@/components/ui/VideoPlayer';
-import { GateMeter } from '@/components/gate/Gate';
 import type { Offer } from '@/lib/offers';
 
 export default function Hero({ offer }: { offer: Offer }) {
@@ -18,8 +17,6 @@ export default function Hero({ offer }: { offer: Offer }) {
             <VideoPlayer id="vsl" videoId={offer.video.vslId} label="Play the WeframeTech video" poster="/assets/video-thumb.jpg" posterWidth={1280} posterHeight={720} note="Final VSL embeds here" />
           </div>
         </div>
-
-        <GateMeter />
 
         <div className="hero-cta rv d2">
           <QualifyLink className="btn">See if you qualify <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14" /><path d="m19 12-7 7-7-7" /></svg></QualifyLink>

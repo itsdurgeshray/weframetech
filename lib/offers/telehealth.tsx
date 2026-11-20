@@ -1,5 +1,10 @@
 import type { Offer } from './types';
 import { QUESTIONS, NOT_FIT, nextStep } from '@/lib/qualifier';
+import { site } from '@/lib/site';
+import { consultIncludes } from './consult';
+
+/** Telehealth VSL (same video as healthcare.weframetech.com). Env vars override it. */
+const TELEHEALTH_VIDEO = 'iHkaJAG2Ans';
 
 /** Offer 2: telehealth venture partnership for doctors (copy: "offer 2 - VSL copy"). */
 export const telehealth: Offer = {
@@ -11,8 +16,8 @@ export const telehealth: Offer = {
     description: 'For doctors and healthcare professionals earning ₹2-10 lakh per month. Watch real client proof, case studies, and see how the WeframeTech telehealth venture partnership works.',
   },
   video: {
-    vslId: process.env.NEXT_PUBLIC_VSL_YOUTUBE_ID ?? '',
-    explainerId: process.env.NEXT_PUBLIC_EXPLAINER_YOUTUBE_ID ?? '',
+    vslId: process.env.NEXT_PUBLIC_VSL_YOUTUBE_ID || TELEHEALTH_VIDEO,
+    explainerId: process.env.NEXT_PUBLIC_EXPLAINER_YOUTUBE_ID || TELEHEALTH_VIDEO,
   },
   hero: {
     title: 'Build a ₹1-10 Crore/Month Telehealth Business of Your Own',
@@ -32,7 +37,7 @@ export const telehealth: Offer = {
     steps: [
       { title: 'Answer 6 quick questions', text: 'Tell us about your healthcare expertise, business idea, current income, goals and investment readiness.' },
       { title: 'Get an instant eligibility check', text: 'Find out if you qualify for our telehealth business partnership.' },
-      { title: 'Book your strategy call', text: 'Discuss the business model, investment, case studies and end-to-end execution roadmap with our team.' },
+      { title: 'Book your ₹499 strategy session', text: '30 minutes with our CEO on the business model, investment, case studies and your end-to-end execution roadmap.' },
     ],
     claim: {
       title: 'BUILD YOUR OWN TELEHEALTH BUSINESS',
@@ -92,6 +97,12 @@ export const telehealth: Offer = {
     },
     summary: ['background', 'income', 'idea2', 'revenue', 'invest2', 'start'],
     notFitCta: 'Watch the 7-minute video',
+  },
+  consult: {
+    price: 499,
+    name: 'Telehealth Strategy Session',
+    includes: consultIncludes('telehealth'),
+    bookingUrl: process.env.NEXT_PUBLIC_TELEHEALTH_BOOKING_URL || site.bookingUrl,
   },
   thankYou: {
     badge: "Application received. You're one step closer.",

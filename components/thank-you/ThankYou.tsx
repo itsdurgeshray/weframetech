@@ -1,10 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 import BookingCta from './BookingCta';
 import LeadSummary from './LeadSummary';
+import { ConsultCard, TrustStrip } from '@/components/consult/Consult';
+import { inr } from '@/lib/offers/consult';
 import type { Offer } from '@/lib/offers';
 
 export default function ThankYou({ offer }: { offer: Offer }) {
   const t = offer.thankYou;
+  const c = offer.consult;
+  const cta = <BookingCta url={c.bookingUrl} label={`Book my ${inr(c.price)} session`} />;
   return (
     <>
       <header className="nav">
@@ -24,14 +28,15 @@ export default function ThankYou({ offer }: { offer: Offer }) {
           <LeadSummary />
         </section>
 
-        <section className="book glass" aria-labelledby="book-title">
-          <div className="in">
-            <div>
-              <h2 id="book-title">Book Your Strategy Call</h2>
-              {t.book.map((p, i) => <p key={i}>{p}</p>)}
-            </div>
-            <BookingCta />
+        <section className="book" aria-labelledby="book-title">
+          <div className="book-intro">
+            <h2 id="book-title">Book Your Strategy Session</h2>
+            {t.book.map((p, i) => <p key={i}>{p}</p>)}
           </div>
+          <ConsultCard consult={c}>
+            <div className="c-cta">{cta}</div>
+          </ConsultCard>
+          <TrustStrip moving={false} />
         </section>
 
         <section className="next" aria-labelledby="next-title">
@@ -47,7 +52,7 @@ export default function ThankYou({ offer }: { offer: Offer }) {
           <div className="in">
             <h2 id="ready-title">{t.ready.title}</h2>
             {t.ready.body}
-            <BookingCta />
+            {cta}
           </div>
         </section>
       </main>

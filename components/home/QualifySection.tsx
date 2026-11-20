@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Qualifier from '@/components/qualifier/Qualifier';
+import { ConsultCard } from '@/components/consult/Consult';
 import type { Offer } from '@/lib/offers';
 
 export default function QualifySection({ offer }: { offer: Offer }) {
@@ -20,6 +21,7 @@ export default function QualifySection({ offer }: { offer: Offer }) {
               {q.flow.map((t, i) => <span key={t}>{i > 0 && <i aria-hidden="true">→</i>}<b>{t}</b></span>)}
             </p>
           )}
+          <ConsultCard consult={offer.consult} className="rv d2" />
           <div className={`claim mini${q.claim.stacked ? ' stacked' : ''} rv d3`}>
             <img src="/assets/claim-photo.jpg" width={2200} height={1238} alt="" />
             <div className="tx">

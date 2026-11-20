@@ -1,7 +1,6 @@
 import Nav from '@/components/ui/Nav';
 import StickyBar from '@/components/ui/StickyBar';
 import Reveal from '@/components/ui/Reveal';
-import { GateProvider } from '@/components/gate/Gate';
 import Hero from './Hero';
 import QualifySection from './QualifySection';
 import Clients from './Clients';
@@ -16,7 +15,7 @@ import type { Offer } from '@/lib/offers';
 /** One landing page, any offer. Design is shared; copy, questions and gates come from lib/offers/<slug>. */
 export default function OfferPage({ offer }: { offer: Offer }) {
   return (
-    <GateProvider storageKey={`wft_vsl_gate_${offer.slug}`}>
+    <>
       <Nav />
       <main id="top">
         <Hero offer={offer} />
@@ -31,6 +30,6 @@ export default function OfferPage({ offer }: { offer: Offer }) {
       <StickyBar note={offer.stickyNote} />
       <Footer />
       <Reveal />
-    </GateProvider>
+    </>
   );
 }

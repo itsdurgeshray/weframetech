@@ -1,4 +1,6 @@
 import type { Answers, Next, Offer, Option } from './types';
+import { site } from '@/lib/site';
+import { consultIncludes } from './consult';
 
 /** Offer 3: build your own manufacturing sales channel (copy: "offer 3 copy"). */
 const o = (value: string, label: string): Option => ({ value, label });
@@ -96,7 +98,7 @@ export const manufacturingSalesChannel: Offer = {
     steps: [
       { title: 'Answer 7 Quick Questions', text: 'Tell us about your manufacturing business, current revenue, sales channels, products and growth goals.' },
       { title: 'Get Your Eligibility Check', text: 'Find out whether your business is suitable for our direct-sales growth partnership.' },
-      { title: 'Book Your Strategy Call', text: 'Discuss your current business model, growth opportunities, case studies and the roadmap for building your own sales channel.' },
+      { title: 'Book Your ₹99 Strategy Session', text: '30 minutes with our CEO on your business model, growth opportunities, case studies and the roadmap for building your own sales channel.' },
     ],
     flow: ['Customers', 'Data', 'Buying Experience', 'Revenue'],
     claim: {
@@ -261,6 +263,12 @@ export const manufacturingSalesChannel: Offer = {
     },
     summary: ['business', 'goal', 'revenue', 'channels', 'invest2', 'start'],
     notFitCta: 'Watch the case study',
+  },
+  consult: {
+    price: 99,
+    name: 'Direct Sales Strategy Session',
+    includes: consultIncludes('manufacturing'),
+    bookingUrl: process.env.NEXT_PUBLIC_MFG_SALES_BOOKING_URL || site.bookingUrl,
   },
   thankYou: {
     badge: "Application received. You're one step closer.",

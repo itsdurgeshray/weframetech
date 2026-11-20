@@ -1,4 +1,6 @@
 import type { Answers, Next, Offer, Option } from './types';
+import { site } from '@/lib/site';
+import { consultIncludes } from './consult';
 
 /**
  * Offer 4: AI-powered manufacturing growth system (copy: "offer 4").
@@ -63,7 +65,7 @@ export const manufacturingAiGrowth: Offer = {
     steps: [
       { title: 'Answer 6 Quick Questions', text: 'Tell us about your manufacturing business, current revenue, products, processes, customer acquisition and growth goals.' },
       { title: 'Get Your Eligibility Check', text: 'Find out whether your manufacturing business is suitable for our AI-powered growth partnership.' },
-      { title: 'Book Your Strategy Call', text: 'Discuss your current operations, growth opportunities, technology requirements, case studies and execution roadmap with our team.' },
+      { title: 'Book Your ₹199 Strategy Session', text: '30 minutes with our CEO on your operations, growth opportunities, technology requirements, case studies and execution roadmap.' },
     ],
     claim: {
       stacked: true,
@@ -237,6 +239,12 @@ export const manufacturingAiGrowth: Offer = {
     },
     summary: ['business', 'revenue', 'improve', 'invest2', 'start'],
     notFitCta: 'Watch the case study',
+  },
+  consult: {
+    price: 199,
+    name: 'AI Growth Strategy Session',
+    includes: consultIncludes('manufacturing'),
+    bookingUrl: process.env.NEXT_PUBLIC_MFG_AI_BOOKING_URL || site.bookingUrl,
   },
   thankYou: {
     badge: "Application received. You're one step closer.",

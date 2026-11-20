@@ -64,27 +64,36 @@ Endpoints and response handling live in `lib/otp/providers/msg91.ts`; check them
 
 Create `lib/otp/providers/<name>.ts` exporting an `OtpProvider`, then register it in `lib/otp/index.ts`.
 
-## Video gate
+## Videos
 
-The qualifier and every "See if you qualify" CTA stay locked until the visitor has watched
-`NEXT_PUBLIC_UNLOCK_PERCENT` (default 70) of a YouTube video. Either of the offer's two videos counts,
-and each offer remembers its own progress.
+Each offer has a hero VSL and an explainer, both YouTube IDs (see `.env.example`). Telehealth defaults to
+`iHkaJAG2Ans`, the video on healthcare.weframetech.com. The poster is the video's YouTube thumbnail and the
+video plays in place on click. Videos must allow embedding. The form is always open (no watch-time lock).
 
-- Tracking uses the YouTube IFrame API and counts seconds actually played (normal speed up to 2x); jumping ahead does not count.
-- Set the offer's video IDs (see `.env.example`). Videos must allow embedding (YouTube > video > Allow embedding).
-- Progress is saved in localStorage, so returning visitors stay unlocked.
-- Locked CTAs scroll to the video and flash the progress meter. The form shows a lock panel.
-- Until a video ID is set, clicking play runs a labelled 20-second simulated playback so the flow can be previewed.
-- Set `NEXT_PUBLIC_UNLOCK_PERCENT=0` to switch the gate off. `?figma` mode always shows the form unlocked.
+## Paid strategy session
 
-Code: `components/gate/Gate.tsx` (state, meter) and `components/ui/VideoPlayer.tsx` (tracking).
+Qualified visitors book a paid 30-minute session with the CEO:
+
+| Offer | Price | Booking link env |
+| --- | --- | --- |
+| Telehealth | ₹499 | `NEXT_PUBLIC_TELEHEALTH_BOOKING_URL` |
+| Manufacturing sales channel | ₹99 | `NEXT_PUBLIC_MFG_SALES_BOOKING_URL` |
+| Manufacturing AI growth | ₹199 | `NEXT_PUBLIC_MFG_AI_BOOKING_URL` |
+
+Any offer without its own link uses `NEXT_PUBLIC_BOOKING_URL`. Payment is taken by the booking tool
+(e.g. a paid Cal.com event or a Razorpay page). Price, name and inclusions live in `consult` in each
+`lib/offers/<slug>.tsx`; the shared inclusions are in `lib/offers/consult.ts`.
+
+The session is shown in three places: the card in the qualify section, the strip on the form's final step,
+and the booking card on the thank-you page. Client logos and proof (`TrustStrip`) sit at the foot of the form
+and on the thank-you page. Code: `components/consult/`.
 
 ## Lead flow
 
 1. The visitor passes the gates and enters name, phone, email, contact preference.
 2. `/api/otp/send` texts the code; `/api/otp/verify` checks it and returns a 30-minute signed token.
 3. `/api/lead` accepts the lead only with a valid token, so every lead has a verified phone, then forwards it to `LEAD_WEBHOOK_URL`.
-4. The browser goes to `/thank-you`, which shows the answers and the strategy-call button (`NEXT_PUBLIC_BOOKING_URL`).
+4. The browser goes to the offer's thank-you page, which shows the answers, what the paid session includes and the booking button.
 
 ## Notes
 

@@ -34,6 +34,18 @@ export type QualifierConfig = {
   notFitCta?: string;
 };
 
+/* ---------- paid strategy session ---------- */
+export type ConsultItem = { title: string; text: string };
+export type Consult = {
+  /** price in INR */
+  price: number;
+  name: string;
+  /** what the visitor walks away with */
+  includes: ConsultItem[];
+  /** booking / payment link for this offer (falls back to NEXT_PUBLIC_BOOKING_URL) */
+  bookingUrl: string;
+};
+
 /* ---------- page ---------- */
 export type Step = { title: string; text: string };
 export type Stat = { value: string; label: string };
@@ -69,6 +81,7 @@ export type Offer = {
   closing: { title: string; body: ReactNode };
   stickyNote: string;
   qualifier: QualifierConfig;
+  consult: Consult;
   thankYou: {
     badge: string;
     ledes: ReactNode[];

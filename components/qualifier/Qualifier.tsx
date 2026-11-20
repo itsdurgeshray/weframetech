@@ -5,7 +5,8 @@ import { getOffer, DEFAULT_OFFER } from '@/lib/offers';
 import type { Answers, DetailField, MultiQuestion, Option, Question } from '@/lib/offers/types';
 import { COUNTRY_CODES, isValidPhone, toE164 } from '@/lib/phone';
 import { site } from '@/lib/site';
-import { GateMeter, LockIcon, useGate } from '@/components/gate/Gate';
+import { inr } from '@/lib/offers/consult';
+import { ConsultStrip, TrustStrip } from '@/components/consult/Consult';
 
 const BackIcon = () => <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>;
 const ArrowIcon = () => (
@@ -32,7 +33,6 @@ export default function Qualifier({ slug }: { slug: string }) {
   const totalBars = Math.max(...Q.questions.map((q) => q.bar)) + 1;
   const has = (f: DetailField) => Q.details.fields.includes(f);
 
-  const { unlocked, nudge } = useGate();
   const formRef = useRef<HTMLFormElement>(null);
   const [cur, setCur] = useState<string>(first);
   const history = useRef<string[]>([first]);
@@ -127,6 +127,15 @@ export default function Qualifier({ slug }: { slug: string }) {
     setLabels((l) => ({ ...l, [q.id]: q.options.filter((o) => picked.includes(o.value)).map((o) => o.label) }));
     advance(q.id, nextA);
   };
+
+  /* form height for the sticky offset on desktop (a tall step sticks by its bottom edge) */
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => form.style.setProperty('--fh', `${form.offsetHeight}px`));
+    ro.observe(form);
+    return () => ro.disconnect();
+  }, []);
 
   /* ---------- resend countdown ---------- */
   useEffect(() => {
@@ -351,8 +360,8 @@ export default function Qualifier({ slug }: { slug: string }) {
   const clear = (k: keyof Errors) => setErrors((x) => ({ ...x, [k]: undefined }));
 
   return (
-    <form className={`form glass rv d1${unlocked ? '' : ' locked'}`} id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
-      <div className="in" inert={!unlocked}>
+    <form className="form glass rv d1" id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
+      <div className="in">
         <div className="prog" aria-hidden="true">
           {Array.from({ length: totalBars }, (_, k) => <i key={k} className={k < filled ? 'on' : undefined}></i>)}
         </div>
@@ -366,6 +375,7 @@ export default function Qualifier({ slug }: { slug: string }) {
             <h3 tabIndex={-1}>You May Be A Good Fit</h3>
             <p>{Q.details.intro}</p>
           </div>
+          <ConsultStrip consult={offer.consult} />
           <div className="fields">
             <div className={`field full${errors.name ? ' bad' : ''}`}>
               <label htmlFor="f-name">Name</label>
@@ -424,11 +434,11 @@ export default function Qualifier({ slug }: { slug: string }) {
           </div>
           <div className="step-foot">
             <button type="submit" className="btn" id="send-btn" aria-busy={sending}>
-              {sending ? 'Sending code...' : <>See if I qualify <ArrowIcon /></>}
+              {sending ? 'Sending code...' : <>Continue to booking <ArrowIcon /></>}
             </button>
             <button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button>
           </div>
-          <p className="form-fine">We&apos;ll text a 6-digit code to verify your number. Your details are only used for this application.</p>
+          <p className="form-fine">We&apos;ll text a 6-digit code to verify your number, then you pick a time for your {inr(offer.consult.price)} session. Your details are only used for this application.</p>
         </div>
 
         {/* Verify phone by OTP */}
@@ -469,17 +479,9 @@ export default function Qualifier({ slug }: { slug: string }) {
             <button type="button" className="back" data-back="" onClick={back}><BackIcon />Change my answer</button>
           </div>
         </div>
-      </div>
 
-      {!unlocked && (
-        <div className="lock-panel" role="region" aria-labelledby="lock-title">
-          <span className="lock-orb"><LockIcon /></span>
-          <h3 id="lock-title">Watch The Video To Unlock</h3>
-          <p id="gate-hint">This application opens once you&apos;ve watched {site.unlockPercent}% of the video. It covers the model, investment and real client results, so you know exactly what you&apos;re applying for.</p>
-          <GateMeter compact />
-          <button type="button" className="btn" onClick={nudge}>Watch the video <ArrowIcon /></button>
-        </div>
-      )}
+        <TrustStrip quote={cur === 'contact'} />
+      </div>
     </form>
   );
 }

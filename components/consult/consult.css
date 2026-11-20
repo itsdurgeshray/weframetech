@@ -1,0 +1,65 @@
+/* Paid strategy session card, form strip and trust strip. Shared by the landing and thank-you pages. */
+.consult{margin-top:12px}
+.consult>.in{padding:24px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(165deg,rgba(255,255,255,.94),rgba(255,255,255,.72))}
+.c-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.c-kicker{display:block;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.c-head h3{font-family:var(--serif);font-weight:500;font-size:24px;line-height:28px;letter-spacing:-.2px;color:var(--ink-2);margin-top:6px}
+.c-sub{font-size:14px;line-height:20px;color:var(--muted);margin-top:4px}
+.c-price{flex:none;display:flex;flex-direction:column;align-items:center;padding:10px 16px 9px;border-radius:16px;background:var(--claim),#fff;border:1.5px solid var(--chip-line);box-shadow:0 0 14px rgba(107,241,255,.35)}
+.c-price b{font-family:var(--serif);font-weight:500;font-size:34px;line-height:36px;letter-spacing:-.5px;color:var(--deep)}
+.c-price span{font-size:11px;line-height:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.c-label{font-size:13px;line-height:16px;font-weight:500;color:var(--ink-2);padding-top:14px;border-top:1px solid rgba(46,154,160,.16)}
+.c-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.c-list li{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:start}
+.c-ck{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--btn);box-shadow:var(--btn-inset);color:#fff;margin-top:1px}
+.c-ck svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.c-list b{display:block;font-size:15px;line-height:20px;font-weight:600;color:var(--ink-2)}
+.c-list span:not(.c-ck){display:block;margin-top:2px;font-size:13.5px;line-height:19px;color:var(--muted)}
+.c-why{font-size:13px;line-height:19px;color:var(--body);padding:12px 14px;border-radius:12px;background:var(--cyan-tint);border:1px solid rgba(143,216,220,.7)}
+.c-why b{font-weight:600;color:var(--deep)}
+
+/* compact version on the form's final step */
+.c-strip{display:flex;flex-direction:column;gap:12px;padding:14px 16px;border-radius:18px;background:var(--claim),#fff;border:1px solid var(--chip-line)}
+.c-strip-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.c-strip-top p{display:flex;flex-direction:column;gap:2px}
+.c-strip-top p span{font-size:12px;line-height:16px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.c-strip-top p b{font-family:var(--serif);font-weight:500;font-size:18px;line-height:22px;color:var(--ink-2)}
+.c-tag{flex:none;font-family:var(--serif);font-weight:500;font-size:22px;line-height:1;color:#fff;background:var(--btn);border:1.5px solid var(--btn-line);box-shadow:var(--btn-inset);padding:10px 14px;border-radius:999px}
+.c-chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.c-chips li{font-size:12px;line-height:16px;font-weight:500;color:var(--chip-ink);padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(143,216,220,.9)}
+.step[data-step="contact"]{gap:24px}
+
+/* client logos + proof at the foot of the form */
+.trust{display:flex;flex-direction:column;gap:14px;padding-top:18px;border-top:1px solid rgba(46,154,160,.18)}
+.t-top{display:flex;align-items:center;gap:12px}
+.t-avs{display:flex;flex:none}
+.t-avs img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,60,66,.18)}
+.t-avs img+img{margin-left:-9px}
+.t-top p{font-size:13px;line-height:18px;color:var(--body)}
+.t-top b{font-weight:600;color:var(--ink-2)}
+.t-logos{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.t-logos .set{gap:36px;padding-right:36px}
+.t-logos .set img{height:18px;opacity:.7}
+.t-logos .set img[src$=".png"]{height:16px;filter:invert(1) grayscale(1);opacity:.45}
+.t-logos .set img.tall{height:26px}
+.t-quote{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(46,154,160,.16)}
+.t-quote blockquote{font-family:var(--serif);font-weight:500;font-size:17px;line-height:22px;color:var(--ink-2)}
+.t-quote figcaption{display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:var(--muted)}
+.t-quote figcaption img{width:24px;height:24px;border-radius:50%;object-fit:cover}
+.t-quote b{font-weight:600;color:var(--ink-2)}
+.t-logos .set{display:flex;align-items:center}
+.t-logos .set img{width:auto;flex:none}
+.t-logos.static{-webkit-mask-image:none;mask-image:none}
+.t-logos.static .set{flex-wrap:wrap;justify-content:center;gap:16px 24px;padding:0}
+.figma .t-logos{-webkit-mask-image:none;mask-image:none}
+
+@media (max-width:560px){
+  .consult>.in{padding:18px 16px;gap:14px}
+  .c-head h3{font-size:21px;line-height:25px}
+  .c-price{padding:8px 12px 7px}
+  .c-price b{font-size:28px;line-height:30px}
+  .c-strip{padding:12px 14px}
+  .c-strip-top p b{font-size:16px;line-height:20px}
+  .c-tag{font-size:19px;padding:9px 12px}
+  .t-top p{font-size:12px;line-height:17px}
+}

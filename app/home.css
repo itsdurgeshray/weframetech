@@ -656,15 +656,93 @@ html{-webkit-tap-highlight-color:transparent}
   .stat b{white-space:normal;font-size:22px;line-height:26px;overflow-wrap:anywhere}
 }
 
-/* paid strategy session + trust styles: components/consult/consult.css */
-@media (max-width:820px){
-  .q-copy .consult{order:4;margin-top:28px}
-  .q-copy .claim.mini{order:5}
-  .q-copy .q-steps{order:6}
+/* ================= apply panel: how-it-works rail + session + form ================= */
+.q-head{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;max-width:760px;margin:0 auto 48px}
+.q-head .lede{max-width:640px}
+.q-head .important{text-align:left;max-width:680px}
+.q-head .q-flow{justify-content:center;margin-top:4px}
+
+.apply{max-width:1120px;margin:0 auto;scroll-margin-top:88px}
+.apply>.in{display:grid;grid-template-columns:400px minmax(0,1fr);grid-template-areas:"rail form";overflow:hidden;background:rgba(255,255,255,.5)}
+
+/* dark rail */
+.ap-rail{grid-area:rail;position:relative;isolation:isolate;display:flex;flex-direction:column;gap:28px;padding:32px 28px 28px;color:#fff;
+  background:radial-gradient(110% 50% at 0% 0%,rgba(107,241,255,.26),rgba(107,241,255,0) 62%),linear-gradient(172deg,#0b5c63 0%,#004a52 46%,#00343a 100%)}
+.ap-rail::after{content:"";position:absolute;inset:0;z-index:-1;background:url("/assets/noise.png") top left/1024px;opacity:.07;pointer-events:none}
+.ap-kicker{display:block;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#aaf7ff}
+.rail{list-style:none;display:flex;flex-direction:column;margin-top:18px}
+.rs{position:relative;display:grid;grid-template-columns:32px 1fr;gap:14px;padding-bottom:22px}
+.rs:last-child{padding-bottom:0}
+.rs:not(:last-child)::before{content:"";position:absolute;left:15px;top:38px;bottom:4px;width:2px;border-radius:2px;background:rgba(170,247,255,.2);transition:background .4s ease}
+.rs-n{position:relative;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1.5px solid rgba(170,247,255,.4);color:#aaf7ff;transition:background .35s ease,border-color .35s ease,box-shadow .35s ease,color .35s ease}
+.rs-n i{font-family:var(--serif);font-weight:500;font-size:15px;line-height:1}
+.rs-n svg{display:none;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.rs b{display:block;font-family:var(--serif);font-weight:500;font-size:18px;line-height:22px;color:rgba(255,255,255,.78);padding-top:5px;transition:color .3s ease}
+.rs div span{display:block;margin-top:5px;font-size:13.5px;line-height:19px;color:rgba(255,255,255,.58)}
+/* current step */
+:is(.apply[data-phase="questions"] .rs:nth-child(1),.apply[data-phase="no"] .rs:nth-child(2),.apply[data-phase="details"] .rs:nth-child(3)) .rs-n{background:#6bf1ff;border-color:#e0fcff;color:#003c42;box-shadow:0 0 0 5px rgba(107,241,255,.16),0 0 18px rgba(107,241,255,.6)}
+:is(.apply[data-phase="questions"] .rs:nth-child(1),.apply[data-phase="no"] .rs:nth-child(2),.apply[data-phase="details"] .rs:nth-child(3)) b{color:#fff}
+/* done steps */
+:is(.apply[data-phase="no"] .rs:nth-child(1),.apply[data-phase="details"] .rs:nth-child(-n+2)) .rs-n{background:rgba(107,241,255,.16);border-color:#6bf1ff;color:#6bf1ff}
+:is(.apply[data-phase="no"] .rs:nth-child(1),.apply[data-phase="details"] .rs:nth-child(-n+2)) .rs-n i{display:none}
+:is(.apply[data-phase="no"] .rs:nth-child(1),.apply[data-phase="details"] .rs:nth-child(-n+2)) .rs-n svg{display:block}
+:is(.apply[data-phase="no"] .rs:nth-child(1),.apply[data-phase="details"] .rs:nth-child(-n+2))::before{background:#6bf1ff}
+
+/* session card sits translucent inside the rail */
+.ap-rail .offer{background:rgba(255,255,255,.06);border:1px solid rgba(170,247,255,.22);box-shadow:inset 0 1px 0 rgba(170,247,255,.16);padding:22px 20px 20px;gap:16px}
+.ap-rail .offer::after{display:none}
+.ap-rail .of-head h3{font-size:21px;line-height:26px}
+.ap-rail .of-price b{font-size:40px}
+
+/* form fills the right side, proof sits at its foot */
+.apply .form{grid-area:form;padding:0;border-radius:0;max-width:none;margin:0;background:none}
+.apply .form>.in{padding:28px 32px 26px;min-height:100%;gap:24px;background:none;box-shadow:none}
+.apply .form .trust{margin-top:auto}
+
+@media (max-width:1180px) and (min-width:981px){
+  .apply>.in{grid-template-columns:340px minmax(0,1fr)}
+  .ap-rail{padding:28px 22px 22px}
+  .apply .form>.in{padding:24px 24px 22px}
 }
-/* the offer column is taller than the form: keep the form in view while reading it */
-@media (min-width:1181px){
-  .qualify{overflow:clip}
-  .qualify .q-grid{align-items:start}
-  .qualify .form{position:sticky;top:min(104px,calc(100vh - var(--fh,0px) - 24px))}
+
+/* stacked: compact stepper on top, form, then the session card */
+@media (max-width:980px){
+  .q-head{margin-bottom:32px}
+  .apply{max-width:640px}
+  .apply>.in{grid-template-columns:minmax(0,1fr);grid-template-areas:"how" "form" "offer"}
+  .ap-rail{display:contents}
+  .ap-rail::after{display:none}
+  .ap-how{grid-area:how;position:relative;padding:20px 18px 18px;color:#fff;background:radial-gradient(90% 120% at 0% 0%,rgba(107,241,255,.26),rgba(107,241,255,0) 62%),linear-gradient(172deg,#0b5c63 0%,#004a52 60%,#00343a 100%)}
+  .ap-how .ap-kicker{text-align:center}
+  .rail{flex-direction:row;margin-top:14px}
+  .rs{flex:1;grid-template-columns:1fr;justify-items:center;text-align:center;gap:8px;padding:0 4px}
+  .rs:not(:last-child)::before{left:calc(50% + 22px);right:calc(-50% + 22px);top:15px;bottom:auto;width:auto;height:2px}
+  .rs b{font-family:var(--sans);font-size:12.5px;line-height:16px;font-weight:500;padding-top:0}
+  .rs div span{display:none}
+  .ap-rail .offer{grid-area:offer;margin:0 10px 10px;border:0;padding:22px 18px 20px;
+    background:radial-gradient(90% 70% at 100% 0%,rgba(107,241,255,.26),rgba(107,241,255,0) 60%),linear-gradient(165deg,#0b5c63 0%,#004a52 52%,#00353b 100%)}
+  .apply .form>.in{padding:24px 20px 22px;min-height:0}
 }
+@media (max-width:560px){
+  .q-head{gap:12px;margin-bottom:24px}
+  .apply{padding:6px;border-radius:20px}
+  .apply>.in{border-radius:15px}
+  .ap-how{padding:18px 12px 16px}
+  .rs-n{width:30px;height:30px}
+  .rs:not(:last-child)::before{top:14px;left:calc(50% + 20px);right:calc(-50% + 20px)}
+  .rs b{font-size:12px;line-height:15px}
+  .apply .form>.in{padding:20px 14px}
+  .ap-rail .offer{margin:0 6px 6px}
+}
+.figma .apply .form>.in{gap:40px}
+/* eligibility note below the apply panel */
+.q-note{max-width:1120px;margin:20px auto 0}
+.q-note .important{flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:6px 24px;padding:18px 22px}
+.q-note .important>p:first-child{flex:1 1 100%}
+.q-note .checks{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 20px;margin:2px 0}
+.q-note .important .sm{flex:1 1 100%}
+@media (max-width:980px){
+  .q-note{max-width:640px}
+  .q-note .checks{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){.q-note{margin-top:14px}.q-note .important{padding:14px}}

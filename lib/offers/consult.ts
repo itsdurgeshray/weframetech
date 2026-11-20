@@ -1,12 +1,11 @@
 import type { ConsultItem } from './types';
 
-/** What every paid strategy session includes. `industry` tailors the wording. */
+/** What every paid strategy session delivers (the 30-min CEO call itself is the card's headline). */
 export const consultIncludes = (industry: string): ConsultItem[] => [
-  { title: '30-minute call with our CEO', text: 'A direct one-on-one with our CEO, not a sales rep. Bring your idea, your numbers and your questions.' },
-  { title: 'Planning for your business', text: `A clear plan for your ${industry} business: the model, the priorities and the next steps, in order.` },
-  { title: 'Proposal, research and audit', text: 'A written proposal backed by market research and an audit of where your business stands today.' },
-  { title: 'Marketing strategy and reports', text: 'The channels, campaigns and numbers we would use to grow it, in reports you keep.' },
-  { title: 'Case studies + 5-min industry video', text: `Real client case studies, plus a 5-minute YouTube case study from the ${industry} industry.` },
+  { title: 'A plan for your business', text: `The model, the priorities and the next steps for your ${industry} business, in order.` },
+  { title: 'Proposal, research & audit', text: 'A written proposal backed by market research and an audit of where you stand today.' },
+  { title: 'Marketing strategy & reports', text: 'The channels, campaigns and numbers we would use to grow it, in reports you keep.' },
+  { title: 'Case studies + 5-min industry video', text: `Real client results, plus a 5-minute YouTube case study from the ${industry} industry.` },
 ];
 
 export const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;

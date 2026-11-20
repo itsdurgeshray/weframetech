@@ -28,11 +28,13 @@ export const telehealth: Offer = {
     intro: (
       <>
         <p className="lede rv d1">We partner with doctors and healthcare professionals who already have a clear vision for building their own healthcare business.</p>
-        <div className="important rv d1">
-          <p><b>Important:</b> You must have your own business idea, brand, product, software concept or telehealth business plan. You should know what you want to build and have a clear direction. We provide the technology, development and marketing expertise to help you execute and grow it.</p>
-          <p className="sm">If you don&apos;t have a clear business idea or plan yet, this partnership may not be the right fit.</p>
-        </div>
       </>
+    ),
+    note: (
+      <div className="important rv d1">
+        <p><b>Important:</b> You must have your own business idea, brand, product, software concept or telehealth business plan. You should know what you want to build and have a clear direction. We provide the technology, development and marketing expertise to help you execute and grow it.</p>
+        <p className="sm">If you don&apos;t have a clear business idea or plan yet, this partnership may not be the right fit.</p>
+      </div>
     ),
     steps: [
       { title: 'Answer 6 quick questions', text: 'Tell us about your healthcare expertise, business idea, current income, goals and investment readiness.' },

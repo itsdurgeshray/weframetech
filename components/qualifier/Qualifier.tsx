@@ -6,7 +6,7 @@ import type { Answers, DetailField, MultiQuestion, Option, Question } from '@/li
 import { COUNTRY_CODES, isValidPhone, toE164 } from '@/lib/phone';
 import { site } from '@/lib/site';
 import { inr } from '@/lib/offers/consult';
-import { ConsultStrip, TrustStrip } from '@/components/consult/Consult';
+import { NextStepNote, TrustStrip } from '@/components/consult/Consult';
 
 const BackIcon = () => <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>;
 const ArrowIcon = () => (
@@ -128,14 +128,11 @@ export default function Qualifier({ slug }: { slug: string }) {
     advance(q.id, nextA);
   };
 
-  /* form height for the sticky offset on desktop (a tall step sticks by its bottom edge) */
+  /* the "how it works" rail beside the form highlights the current step */
   useEffect(() => {
-    const form = formRef.current;
-    if (!form || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(() => form.style.setProperty('--fh', `${form.offsetHeight}px`));
-    ro.observe(form);
-    return () => ro.disconnect();
-  }, []);
+    const phase = cur === 'no' ? 'no' : cur === 'contact' || cur === 'verify' ? 'details' : 'questions';
+    document.getElementById('apply')?.setAttribute('data-phase', phase);
+  }, [cur]);
 
   /* ---------- resend countdown ---------- */
   useEffect(() => {
@@ -360,7 +357,7 @@ export default function Qualifier({ slug }: { slug: string }) {
   const clear = (k: keyof Errors) => setErrors((x) => ({ ...x, [k]: undefined }));
 
   return (
-    <form className="form glass rv d1" id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
+    <form className="form" id="qform" noValidate aria-label="See if you qualify" ref={formRef} onSubmit={onSubmit}>
       <div className="in">
         <div className="prog" aria-hidden="true">
           {Array.from({ length: totalBars }, (_, k) => <i key={k} className={k < filled ? 'on' : undefined}></i>)}
@@ -375,7 +372,7 @@ export default function Qualifier({ slug }: { slug: string }) {
             <h3 tabIndex={-1}>You May Be A Good Fit</h3>
             <p>{Q.details.intro}</p>
           </div>
-          <ConsultStrip consult={offer.consult} />
+          <NextStepNote consult={offer.consult} />
           <div className="fields">
             <div className={`field full${errors.name ? ' bad' : ''}`}>
               <label htmlFor="f-name">Name</label>

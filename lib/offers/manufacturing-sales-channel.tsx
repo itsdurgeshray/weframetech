@@ -82,18 +82,20 @@ export const manufacturingSalesChannel: Offer = {
     intro: (
       <>
         <p className="lede rv d1">We work with established manufacturing businesses that already have a proven product, customers and operational capability, but want to build a stronger, more scalable sales channel of their own.</p>
-        <div className="important rv d1">
-          <p><b>You should already have:</b></p>
-          <ul className="checks">
-            <li>An established manufacturing business</li>
-            <li>A proven product or product category</li>
-            <li>Existing revenue and customers</li>
-            <li>A clear ambition to scale</li>
-            <li>The ability to fulfill increased demand</li>
-          </ul>
-          <p className="sm">If most of your revenue currently comes through distributors, wholesalers, marketplaces, sales representatives, phone calls, emails or manual processes, this framework may be a strong fit.</p>
-        </div>
       </>
+    ),
+    note: (
+      <div className="important rv d1">
+        <p><b>You should already have:</b></p>
+        <ul className="checks">
+          <li>An established manufacturing business</li>
+          <li>A proven product or product category</li>
+          <li>Existing revenue and customers</li>
+          <li>A clear ambition to scale</li>
+          <li>The ability to fulfill increased demand</li>
+        </ul>
+        <p className="sm">If most of your revenue currently comes through distributors, wholesalers, marketplaces, sales representatives, phone calls, emails or manual processes, this framework may be a strong fit.</p>
+      </div>
     ),
     steps: [
       { title: 'Answer 7 Quick Questions', text: 'Tell us about your manufacturing business, current revenue, sales channels, products and growth goals.' },

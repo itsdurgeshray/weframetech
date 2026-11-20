@@ -84,9 +84,11 @@ Any offer without its own link uses `NEXT_PUBLIC_BOOKING_URL`. Payment is taken 
 (e.g. a paid Cal.com event or a Razorpay page). Price, name and inclusions live in `consult` in each
 `lib/offers/<slug>.tsx`; the shared inclusions are in `lib/offers/consult.ts`.
 
-The session is shown in three places: the card in the qualify section, the strip on the form's final step,
-and the booking card on the thank-you page. Client logos and proof (`TrustStrip`) sit at the foot of the form
-and on the thank-you page. Code: `components/consult/`.
+The qualify section is one apply panel: a dark "how it works" rail (the 3 steps, which light up as the visitor
+moves through the form, plus the session card) beside the form, with client logos and proof (`TrustStrip`) at
+the foot of the form. The offer's eligibility `note` sits below the panel. On phones the rail becomes a compact
+stepper above the form and the session card moves below it. The thank-you page shows the same card with the
+booking button. Code: `components/home/QualifySection.tsx`, `components/consult/`.
 
 ## Lead flow
 

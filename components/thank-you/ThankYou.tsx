@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import BookingCta from './BookingCta';
 import LeadSummary from './LeadSummary';
-import { ConsultCard, TrustStrip } from '@/components/consult/Consult';
+import { OfferPanel, TrustStrip } from '@/components/consult/Consult';
 import { inr } from '@/lib/offers/consult';
 import type { Offer } from '@/lib/offers';
 
@@ -33,9 +33,9 @@ export default function ThankYou({ offer }: { offer: Offer }) {
             <h2 id="book-title">Book Your Strategy Session</h2>
             {t.book.map((p, i) => <p key={i}>{p}</p>)}
           </div>
-          <ConsultCard consult={c}>
+          <OfferPanel consult={c} detailed>
             <div className="c-cta">{cta}</div>
-          </ConsultCard>
+          </OfferPanel>
           <TrustStrip moving={false} />
         </section>
 

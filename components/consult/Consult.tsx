@@ -9,59 +9,51 @@ const Check = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
 );
 
-/** Full "what you get" card for the paid strategy session (qualify section, thank-you page). */
-export function ConsultCard({ consult, className = '', children }: { consult: Consult; className?: string; children?: ReactNode }) {
+/**
+ * The paid strategy session: headline, price, deliverables.
+ * Dark teal card; inside the apply rail it turns translucent. `detailed` adds a line under each deliverable.
+ */
+export function OfferPanel({ consult, detailed = false, className = '', children }: { consult: Consult; detailed?: boolean; className?: string; children?: ReactNode }) {
   return (
-    <div className={`consult glass ${className}`}>
-      <div className="in">
-        <div className="c-head">
-          <div>
-            <span className="c-kicker">For qualified applicants</span>
-            <h3>{consult.name}</h3>
-            <p className="c-sub">30 minutes, one-on-one with our CEO</p>
-          </div>
-          <div className="c-price" aria-label={`${inr(consult.price)} one-time fee`}>
-            <b>{inr(consult.price)}</b>
-            <span>one-time</span>
-          </div>
-        </div>
-        <p className="c-label">What you walk away with</p>
-        <ul className="c-list">
-          {consult.includes.map((it) => (
-            <li key={it.title}><span className="c-ck"><Check /></span><div><b>{it.title}</b><span>{it.text}</span></div></li>
-          ))}
-        </ul>
-        <p className="c-why"><b>Why a fee?</b> It keeps our CEO&apos;s calendar for business owners who are serious about building. Everything above is yours to keep, whether or not we work together.</p>
-        {children}
+    <div className={`offer ${className}`}>
+      <div className="of-head">
+        <span className="of-kicker">{consult.name}</span>
+        <h3>30 minutes, one-on-one with our CEO</h3>
       </div>
+      <div className="of-price">
+        <b>{inr(consult.price)}</b>
+        <span>One-time fee<br />Qualified applicants only</span>
+      </div>
+      <ul className="of-list" aria-label="What you walk away with">
+        {consult.includes.map((it) => (
+          <li key={it.title}>
+            <span className="of-ck"><Check /></span>
+            <div><b>{it.title}</b>{detailed && <span>{it.text}</span>}</div>
+          </li>
+        ))}
+      </ul>
+      <p className="of-why">The fee keeps our CEO&apos;s calendar for serious founders. Everything above is yours to keep, whether or not we work together.</p>
+      {children}
     </div>
   );
 }
 
-/** Compact version for the form's final step: price + the deliverables as chips. */
-export function ConsultStrip({ consult }: { consult: Consult }) {
+/** One-line reminder on the form's final step (the full card is in the rail, or below the form on phones). */
+export function NextStepNote({ consult }: { consult: Consult }) {
   return (
-    <div className="c-strip">
-      <div className="c-strip-top">
-        <p><span>Your next step</span><b>30-min strategy session with our CEO</b></p>
-        <span className="c-tag">{inr(consult.price)}</span>
-      </div>
-      <ul className="c-chips">
-        <li>Planning</li>
-        <li>Proposal &amp; research</li>
-        <li>Audit</li>
-        <li>Marketing strategy</li>
-        <li>Reports</li>
-        <li>Case studies</li>
-        <li>5-min industry video</li>
-      </ul>
+    <div className="c-next">
+      <span className="c-next-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>
+      </span>
+      <p>Next, pick a time for your <b>30-min session with our CEO</b></p>
+      <b className="c-next-price">{inr(consult.price)}</b>
     </div>
   );
 }
 
 const AVATARS = ['t-bernd.jpg', 't-ty.jpg', 't-derin.jpg', 't-jake.jpg', 't-micha.jpg'];
 
-/** Client logos + social proof at the foot of the form (and on the thank-you page). */
+/** Client logos + social proof (foot of the form, thank-you page). */
 export function TrustStrip({ quote = false, moving = true }: { quote?: boolean; moving?: boolean }) {
   const logos = (
     <>

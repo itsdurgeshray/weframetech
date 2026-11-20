@@ -4,13 +4,11 @@ import type { AnchorHTMLAttributes, MouseEvent } from 'react';
 
 /**
  * Every "See if you qualify" CTA. Smooth-scrolls to the qualifier:
- * desktop centres the whole section, tablet/phone lands on the form card itself.
+ * lands on the apply panel (how-it-works steps + form).
  */
 export function scrollToQualifier() {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const narrow = innerWidth < 1180;
-  const target = narrow ? document.getElementById('qform') : document.getElementById('qualify');
-  target?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: narrow ? 'start' : 'center' });
+  document.getElementById('apply')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   setTimeout(() => {
     const first = document.querySelector<HTMLElement>('#qform .step.cur .ans, #qform .result.cur a');
     first?.focus({ preventScroll: true });

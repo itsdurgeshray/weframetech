@@ -48,19 +48,21 @@ export const manufacturingAiGrowth: Offer = {
     intro: (
       <>
         <p className="lede rv d1">We partner with established manufacturing businesses that already have proven products, customers and revenue but are held back by manual processes, inefficient operations, inconsistent B2B inquiries or a poor digital buying experience.</p>
-        <div className="important rv d1">
-          <p><b>You should have:</b></p>
-          <ul className="checks">
-            <li>An established manufacturing business</li>
-            <li>Proven products and existing customers</li>
-            <li>₹50 lakh+ in monthly revenue</li>
-            <li>A clear ambition to scale</li>
-            <li>Existing sales or customer acquisition processes</li>
-            <li>The ability to invest in technology, marketing and execution</li>
-          </ul>
-          <p className="sm">If your business still depends heavily on <b>phone calls, emails, spreadsheets, sales representatives and manual processes</b>, there may be significant opportunities to improve efficiency and revenue.</p>
-        </div>
       </>
+    ),
+    note: (
+      <div className="important rv d1">
+        <p><b>You should have:</b></p>
+        <ul className="checks">
+          <li>An established manufacturing business</li>
+          <li>Proven products and existing customers</li>
+          <li>₹50 lakh+ in monthly revenue</li>
+          <li>A clear ambition to scale</li>
+          <li>Existing sales or customer acquisition processes</li>
+          <li>The ability to invest in technology, marketing and execution</li>
+        </ul>
+        <p className="sm">If your business still depends heavily on <b>phone calls, emails, spreadsheets, sales representatives and manual processes</b>, there may be significant opportunities to improve efficiency and revenue.</p>
+      </div>
     ),
     steps: [
       { title: 'Answer 6 Quick Questions', text: 'Tell us about your manufacturing business, current revenue, products, processes, customer acquisition and growth goals.' },

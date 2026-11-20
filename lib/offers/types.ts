@@ -59,6 +59,8 @@ export type Offer = {
   hero: { title: ReactNode; body: ReactNode; meta: string };
   qualify: {
     intro: ReactNode;
+    /** eligibility note shown below the apply panel */
+    note?: ReactNode;
     steps: Step[];
     /** optional chip chain under the steps, e.g. Customers → Data → Revenue */
     flow?: string[];

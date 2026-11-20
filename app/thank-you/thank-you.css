@@ -49,7 +49,6 @@ h1{font-family:var(--serif);font-weight:500;color:var(--ink);font-size:52px;line
 .glass>.in{background:rgba(255,255,255,.1);border-radius:16px;box-shadow:var(--glass-shadow)}
 .book{display:flex;flex-direction:column;gap:20px}
 .book-intro{text-align:center;display:flex;flex-direction:column;align-items:center}
-.book .consult{margin-top:0}
 .c-cta{display:flex;flex-direction:column;align-items:stretch;gap:8px}
 .book .trust{border-top:0;padding-top:4px;align-items:center;text-align:center}
 .book h2{font-family:var(--serif);font-weight:500;color:var(--ink-2);font-size:28px;line-height:32px;letter-spacing:-.3px}

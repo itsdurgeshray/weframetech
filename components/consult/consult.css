@@ -1,33 +1,34 @@
-/* Paid strategy session card, form strip and trust strip. Shared by the landing and thank-you pages. */
-.consult{margin-top:12px}
-.consult>.in{padding:24px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(165deg,rgba(255,255,255,.94),rgba(255,255,255,.72))}
-.c-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-.c-kicker{display:block;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-.c-head h3{font-family:var(--serif);font-weight:500;font-size:24px;line-height:28px;letter-spacing:-.2px;color:var(--ink-2);margin-top:6px}
-.c-sub{font-size:14px;line-height:20px;color:var(--muted);margin-top:4px}
-.c-price{flex:none;display:flex;flex-direction:column;align-items:center;padding:10px 16px 9px;border-radius:16px;background:var(--claim),#fff;border:1.5px solid var(--chip-line);box-shadow:0 0 14px rgba(107,241,255,.35)}
-.c-price b{font-family:var(--serif);font-weight:500;font-size:34px;line-height:36px;letter-spacing:-.5px;color:var(--deep)}
-.c-price span{font-size:11px;line-height:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);font-weight:500}
-.c-label{font-size:13px;line-height:16px;font-weight:500;color:var(--ink-2);padding-top:14px;border-top:1px solid rgba(46,154,160,.16)}
-.c-list{list-style:none;display:flex;flex-direction:column;gap:12px}
-.c-list li{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:start}
-.c-ck{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--btn);box-shadow:var(--btn-inset);color:#fff;margin-top:1px}
-.c-ck svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
-.c-list b{display:block;font-size:15px;line-height:20px;font-weight:600;color:var(--ink-2)}
-.c-list span:not(.c-ck){display:block;margin-top:2px;font-size:13.5px;line-height:19px;color:var(--muted)}
-.c-why{font-size:13px;line-height:19px;color:var(--body);padding:12px 14px;border-radius:12px;background:var(--cyan-tint);border:1px solid rgba(143,216,220,.7)}
-.c-why b{font-weight:600;color:var(--deep)}
+/* Paid strategy session card, final-step reminder and trust strip. Shared by the landing and thank-you pages. */
 
-/* compact version on the form's final step */
-.c-strip{display:flex;flex-direction:column;gap:12px;padding:14px 16px;border-radius:18px;background:var(--claim),#fff;border:1px solid var(--chip-line)}
-.c-strip-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.c-strip-top p{display:flex;flex-direction:column;gap:2px}
-.c-strip-top p span{font-size:12px;line-height:16px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
-.c-strip-top p b{font-family:var(--serif);font-weight:500;font-size:18px;line-height:22px;color:var(--ink-2)}
-.c-tag{flex:none;font-family:var(--serif);font-weight:500;font-size:22px;line-height:1;color:#fff;background:var(--btn);border:1.5px solid var(--btn-line);box-shadow:var(--btn-inset);padding:10px 14px;border-radius:999px}
-.c-chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
-.c-chips li{font-size:12px;line-height:16px;font-weight:500;color:var(--chip-ink);padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(143,216,220,.9)}
-.step[data-step="contact"]{gap:24px}
+/* ---------- session card (dark teal) ---------- */
+.offer{position:relative;isolation:isolate;display:flex;flex-direction:column;gap:18px;padding:26px 24px 24px;border-radius:20px;color:#fff;overflow:hidden;
+  background:radial-gradient(90% 70% at 100% 0%,rgba(107,241,255,.26),rgba(107,241,255,0) 60%),linear-gradient(165deg,#0b5c63 0%,#004a52 52%,#00353b 100%);
+  box-shadow:0 18px 40px rgba(0,74,82,.28),inset 0 1px 0 rgba(170,247,255,.25)}
+.offer::after{content:"";position:absolute;inset:0;z-index:-1;background:url("/assets/noise.png") top left/1024px;opacity:.07;pointer-events:none}
+.of-kicker{display:block;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#aaf7ff}
+.of-head h3{font-family:var(--serif);font-weight:500;font-size:24px;line-height:29px;letter-spacing:-.2px;color:#fff;margin-top:8px}
+.of-price{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:16px;background:linear-gradient(90deg,rgba(107,241,255,.18),rgba(107,241,255,.04));border:1px solid rgba(170,247,255,.28)}
+.of-price b{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1;letter-spacing:-.8px;color:#aaf7ff;text-shadow:0 0 22px rgba(107,241,255,.45)}
+.of-price span{font-size:12.5px;line-height:17px;color:rgba(255,255,255,.72);padding-left:16px;border-left:1px solid rgba(170,247,255,.28)}
+.of-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.of-list li{display:grid;grid-template-columns:20px 1fr;gap:12px;align-items:start}
+.of-ck{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#6bf1ff;color:#003c42;margin-top:1px;box-shadow:0 0 10px rgba(107,241,255,.45)}
+.of-ck svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+.of-list b{display:block;font-size:15px;line-height:21px;font-weight:500;color:#fff}
+.of-list li span:not(.of-ck){display:block;margin-top:2px;font-size:13.5px;line-height:19px;color:rgba(255,255,255,.66)}
+.of-why{font-size:12.5px;line-height:18px;color:rgba(255,255,255,.62);padding-top:16px;border-top:1px solid rgba(170,247,255,.16)}
+/* light button on the dark card */
+.offer .btn{background:linear-gradient(180deg,#d1fbff 0%,#6bf1ff 100%);color:#003c42;border:1.5px solid #e0fcff;box-shadow:0 8px 24px rgba(66,237,255,.3),inset 0 -2px 0 rgba(0,74,82,.12);text-shadow:none}
+.offer .btn:hover{box-shadow:0 12px 30px rgba(66,237,255,.45),inset 0 -2px 0 rgba(0,74,82,.12)}
+.offer .note{color:#aaf7ff}
+
+/* ---------- final-step reminder ---------- */
+.c-next{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--claim),#fff;border:1px solid var(--chip-line)}
+.c-next-ico{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--btn);color:#fff;box-shadow:var(--btn-inset)}
+.c-next-ico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.c-next p{flex:1;min-width:0;font-size:14px;line-height:19px;color:var(--body)}
+.c-next p b{font-weight:600;color:var(--ink-2)}
+.c-next-price{flex:none;font-family:var(--serif);font-weight:500;font-size:22px;line-height:1;color:var(--deep)}
 
 /* client logos + proof at the foot of the form */
 .trust{display:flex;flex-direction:column;gap:14px;padding-top:18px;border-top:1px solid rgba(46,154,160,.18)}
@@ -54,12 +55,12 @@
 .figma .t-logos{-webkit-mask-image:none;mask-image:none}
 
 @media (max-width:560px){
-  .consult>.in{padding:18px 16px;gap:14px}
-  .c-head h3{font-size:21px;line-height:25px}
-  .c-price{padding:8px 12px 7px}
-  .c-price b{font-size:28px;line-height:30px}
-  .c-strip{padding:12px 14px}
-  .c-strip-top p b{font-size:16px;line-height:20px}
-  .c-tag{font-size:19px;padding:9px 12px}
+  .offer{padding:22px 18px 20px;gap:16px}
+  .of-head h3{font-size:21px;line-height:26px}
+  .of-price{padding:12px 14px;gap:14px}
+  .of-price b{font-size:38px}
+  .of-price span{padding-left:14px}
+  .c-next p{font-size:13px;line-height:18px}
+  .c-next-price{font-size:20px}
   .t-top p{font-size:12px;line-height:17px}
 }

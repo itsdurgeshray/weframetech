@@ -9,9 +9,9 @@
 .of-ceo{display:grid;grid-template-columns:54px 1fr auto;align-items:center;gap:14px;margin-top:12px}
 .of-ceo img{width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #aaf7ff;box-shadow:0 0 0 4px rgba(107,241,255,.14),0 0 16px rgba(107,241,255,.35)}
 .of-ceo h3{margin-top:0!important}
-.of-li{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#fff;color:#0a66c2;box-shadow:0 4px 12px rgba(0,0,0,.18);transition:transform .2s ease,box-shadow .2s ease}
-.of-li:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.25)}
-.of-li svg{width:17px;height:17px;fill:currentColor}
+.of-li{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#aaf7ff;background:rgba(170,247,255,.08);border:1px solid rgba(170,247,255,.28);transition:background .2s ease,color .2s ease,border-color .2s ease}
+.of-li:hover{background:#0a66c2;border-color:#0a66c2;color:#fff}
+.of-li svg{width:18px;height:18px;fill:currentColor}
 .of-head h3{font-family:var(--serif);font-weight:500;font-size:24px;line-height:29px;letter-spacing:-.2px;color:#fff;margin-top:8px}
 .of-price{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:16px;background:linear-gradient(90deg,rgba(107,241,255,.18),rgba(107,241,255,.04));border:1px solid rgba(170,247,255,.28)}
 .of-price b{font-family:var(--serif);font-weight:500;font-size:44px;line-height:1;letter-spacing:-.8px;color:#aaf7ff;text-shadow:0 0 22px rgba(107,241,255,.45)}

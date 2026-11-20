@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { getOffer, DEFAULT_OFFER } from '@/lib/offers';
 import type { Answers, DetailField, MultiQuestion, Option, Question } from '@/lib/offers/types';
 import { COUNTRY_CODES, isValidPhone, toE164 } from '@/lib/phone';
-import { site } from '@/lib/site';
 import { inr } from '@/lib/offers/consult';
 import { NextStepNote, TrustStrip } from '@/components/consult/Consult';
 
 const BackIcon = () => <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>;
 const ArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+);
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
 );
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const URL_LIKE = /^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i;
@@ -22,6 +24,12 @@ const CONTACT_PREFS: Option[] = [
   { value: 'call', label: 'Phone Call' },
   { value: 'email', label: 'Email' },
 ];
+
+/** What the form keeps in sessionStorage so "back" from Razorpay reopens the details step, filled in. */
+type Saved = {
+  answers: Answers; labels: Record<string, string[]>; multi: Record<string, string[]>;
+  name: string; company: string; website: string; cc: string; phone: string; email: string; pref: string;
+};
 
 type Errors = { name?: boolean; company?: boolean; email?: boolean; website?: boolean; pref?: boolean; phone?: string };
 
@@ -57,17 +65,14 @@ export default function Qualifier({ slug }: { slug: string }) {
   const [errors, setErrors] = useState<Errors>({});
   const [sending, setSending] = useState(false);
 
-  // verify step
-  const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
-  const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [otpErr, setOtpErr] = useState('');
-  const [verifyLabel, setVerifyLabel] = useState('Verify and submit');
-  const [sentTo, setSentTo] = useState('');
-  const [sentLabel, setSentLabel] = useState('your phone');
-  const [demoCode, setDemoCode] = useState('');
-  const [resendIn, setResendIn] = useState(0);
-  const [resending, setResending] = useState(false);
-  const verifying = useRef(false);
+  // checkout handoff
+  const [payUrl, setPayUrl] = useState('');
+  const [payDemo, setPayDemo] = useState(false);
+  const [payErr, setPayErr] = useState('');
+  const [restored, setRestored] = useState(false);
+  const formKey = `wft_form_${offer.slug}`;
+  const checkoutKey = `wft_checkout_${offer.slug}`;
+  const price = inr(offer.consult.price);
 
   const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -86,7 +91,6 @@ export default function Qualifier({ slug }: { slug: string }) {
     const el = form.querySelector('.step.cur, .result.cur');
     const h = el?.querySelector<HTMLElement>('.variant.cur h3, :scope > .step-head h3, :scope > h3');
     h?.focus({ preventScroll: true });
-    if (cur === 'verify') setTimeout(() => digitRefs.current[0]?.focus({ preventScroll: true }), 60);
     const r = form.getBoundingClientRect();
     if (r.top < 0 || r.top > innerHeight * 0.4) form.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' });
   }, [cur]);
@@ -130,32 +134,38 @@ export default function Qualifier({ slug }: { slug: string }) {
 
   /* the "how it works" rail beside the form highlights the current step */
   useEffect(() => {
-    const phase = cur === 'no' ? 'no' : cur === 'contact' || cur === 'verify' ? 'details' : 'questions';
+    const phase = cur === 'no' ? 'no' : cur === 'contact' || cur === 'pay' ? 'details' : 'questions';
     document.getElementById('apply')?.setAttribute('data-phase', phase);
   }, [cur]);
 
-  /* ---------- resend countdown ---------- */
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendIn]);
-
-  /* ---------- OTP ---------- */
-  const sendCode = async (resend = false) => {
-    const e164 = toE164(cc, phone);
-    const r = await post('/api/otp/send', { phone: e164, resend });
-    if (!r.ok) throw new Error(r.status === 429 ? 'Too many attempts. Please try again in a few minutes.' : 'We could not send the code. Check the number and try again.');
-    const data = (await r.json()) as { demo?: boolean; demoCode?: string };
-    setSentTo(e164);
-    setSentLabel(`${cc} ${phone.trim()}`);
-    setDemoCode(data.demo ? data.demoCode || '123456' : '');
-    setDigits(['', '', '', '', '', '']);
-    setOtpErr('');
-    setResendIn(site.otpResendSeconds);
+  /* ---------- back from Razorpay without paying: reopen the details step with everything kept ---------- */
+  const reopenDetails = () => {
+    history.current = [first, 'contact'];
+    setSending(false);
+    setRestored(true);
+    setCur('contact');
   };
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(formKey) || 'null') as Saved | null;
+      if (saved) {
+        setAnswers(saved.answers); setLabels(saved.labels); setMulti(saved.multi);
+        setName(saved.name); setCompany(saved.company); setWebsite(saved.website);
+        setCc(saved.cc); setPhone(saved.phone); setEmail(saved.email); setPref(saved.pref);
+        reopenDetails();
+        // land on the form, after the browser's own scroll restoration
+        setTimeout(() => document.getElementById('qform')?.scrollIntoView({ block: 'start' }), 350);
+      }
+    } catch { /* storage blocked: start fresh */ }
+    // page restored from the back/forward cache while showing the redirect screen
+    const onShow = (e: PageTransitionEvent) => { if (e.persisted) reopenDetails(); };
+    addEventListener('pageshow', onShow);
+    return () => removeEventListener('pageshow', onShow);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const toVerify = async () => {
+  /* ---------- checkout: save the lead, then hand over to Razorpay ---------- */
+  const toCheckout = async () => {
     const e: Errors = {
       name: name.trim().length < 2,
       company: has('company') && company.trim().length < 2,
@@ -165,109 +175,42 @@ export default function Qualifier({ slug }: { slug: string }) {
       pref: has('contactPref') && !pref,
     };
     setErrors(e);
+    setPayErr('');
     const form = formRef.current!;
     const firstBad = (['name', 'company', 'phone', 'email', 'website'] as const).find((k) => e[k]);
     if (firstBad) return form.querySelector<HTMLElement>(`#f-${firstBad}`)?.focus();
     if (e.pref) return form.querySelector<HTMLElement>('#pref-field .ans')?.focus();
-    setSending(true);
-    try {
-      await sendCode();
-      go('verify');
-    } catch (err) {
-      setErrors({ phone: (err as Error).message });
-    } finally {
-      setSending(false);
-    }
-  };
 
-  const finish = async (token: string) => {
-    setVerifyLabel('Submitting...');
+    setSending(true);
     const lead = {
       offer: offer.slug, answers,
-      name, email,
+      name: name.trim(), email: email.trim(), phone: toE164(cc, phone),
       ...(has('company') ? { company } : {}),
       ...(has('website') ? { website } : {}),
       ...(has('contactPref') ? { contact_pref: pref } : {}),
     };
-    try { await post('/api/lead', { lead, token }); } catch { /* the thank-you page still loads */ }
     try {
-      sessionStorage.setItem('wft_lead', JSON.stringify({ name, email, labels: Q.summary.flatMap((k) => labels[k] ?? []) }));
-    } catch { /* storage blocked: thank-you page falls back to generic copy */ }
-    location.href = offer.thankYouPath;
-  };
-
-  const verifyCode = async (code = digits.join('')) => {
-    if (verifying.current) return;
-    setOtpErr('');
-    if (code.length < 6) { setOtpErr('Enter all 6 digits.'); digitRefs.current[code.length]?.focus(); return; }
-    verifying.current = true;
-    setVerifyLabel('Verifying...');
-    try {
-      const r = await post('/api/otp/verify', { phone: sentTo, code });
-      if (!r.ok) throw new Error(r.status === 429 ? 'Too many attempts. Please request a new code shortly.' : 'We could not verify the code. Please try again.');
-      const data = (await r.json()) as { verified: boolean; token?: string };
-      if (!data.verified || !data.token) {
-        setOtpErr("That code doesn't match. Check the SMS and try again.");
-        setDigits(['', '', '', '', '', '']);
-        digitRefs.current[0]?.focus();
-        setVerifyLabel('Verify and submit');
-        verifying.current = false;
-        return;
-      }
-      await finish(data.token);
+      const r = await post('/api/checkout', { lead });
+      if (!r.ok) throw new Error(r.status === 429 ? 'Too many attempts. Please try again in a few minutes.' : 'We could not open the payment page. Please try again in a moment.');
+      const data = (await r.json()) as { url: string; demo: boolean; leadId: string };
+      try {
+        const saved: Saved = { answers, labels, multi, name, company, website, cc, phone, email, pref };
+        sessionStorage.setItem(formKey, JSON.stringify(saved));
+        sessionStorage.setItem(checkoutKey, JSON.stringify({ url: data.url, leadId: data.leadId, name: lead.name, email: lead.email, demo: data.demo }));
+      } catch { /* storage blocked: the redirect still works */ }
+      setPayUrl(data.url);
+      setPayDemo(data.demo);
+      go('pay');
+      setTimeout(() => { location.href = data.url; }, reduce() ? 300 : 1400);
     } catch (err) {
-      setOtpErr((err as Error).message);
-      setVerifyLabel('Verify and submit');
-      verifying.current = false;
+      setPayErr((err as Error).message);
+      setSending(false);
     }
-  };
-
-  const resend = async () => {
-    setResending(true);
-    try { await sendCode(true); digitRefs.current[0]?.focus(); }
-    catch (err) { setOtpErr((err as Error).message); }
-    finally { setResending(false); }
-  };
-
-  const changeNumber = () => {
-    setResendIn(0);
-    back();
-    setTimeout(() => { const el = formRef.current?.querySelector<HTMLInputElement>('#f-phone'); el?.focus(); el?.select(); }, 30);
-  };
-
-  /* ---------- six code boxes ---------- */
-  const setCode = (next: string[], focusAt: number) => {
-    setDigits(next);
-    setOtpErr('');
-    digitRefs.current[Math.min(focusAt, 5)]?.focus();
-    if (next.every(Boolean)) verifyCode(next.join(''));
-  };
-  const fillFrom = (k: number, str: string) => {
-    const chars = str.replace(/\D/g, '').slice(0, 6 - k).split('');
-    const next = [...digits];
-    chars.forEach((c, n) => { next[k + n] = c; });
-    setCode(next, k + chars.length);
-  };
-  const onDigit = (k: number, raw: string) => {
-    const v = raw.replace(/\D/g, '');
-    if (v.length > 1) return fillFrom(k, v);
-    const next = [...digits];
-    next[k] = v;
-    setCode(next, v ? k + 1 : k);
-  };
-  const onDigitKey = (k: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !digits[k] && k > 0) {
-      e.preventDefault();
-      const next = [...digits]; next[k - 1] = '';
-      setDigits(next); digitRefs.current[k - 1]?.focus();
-    } else if (e.key === 'ArrowLeft' && k > 0) digitRefs.current[k - 1]?.focus();
-    else if (e.key === 'ArrowRight' && k < 5) digitRefs.current[k + 1]?.focus();
   };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (cur === 'contact') toVerify();
-    else if (cur === 'verify') verifyCode();
+    if (cur === 'contact') toCheckout();
   };
 
   const order = (['name', 'company', 'phone', 'email', 'website'] as const).filter((f) => has(f));
@@ -278,7 +221,7 @@ export default function Qualifier({ slug }: { slug: string }) {
   };
 
   /* ---------- render ---------- */
-  const filled = cur === 'no' || cur === 'contact' || cur === 'verify' ? totalBars : Q.questions.find((q) => q.id === cur)?.bar ?? 1;
+  const filled = cur === 'no' || cur === 'contact' || cur === 'pay' ? totalBars : Q.questions.find((q) => q.id === cur)?.bar ?? 1;
 
   const singleOpts = (q: Question, options: Option[]) => (
     <div className="opts stack" role="group">
@@ -372,6 +315,7 @@ export default function Qualifier({ slug }: { slug: string }) {
             <h3 tabIndex={-1}>You May Be A Good Fit</h3>
             <p>{Q.details.intro}</p>
           </div>
+          {restored && <p className="restored" role="status">Welcome back. Your answers are saved, so you can go straight to payment.</p>}
           <NextStepNote consult={offer.consult} />
           <div className="fields">
             <div className={`field full${errors.name ? ' bad' : ''}`}>
@@ -431,40 +375,25 @@ export default function Qualifier({ slug }: { slug: string }) {
           </div>
           <div className="step-foot">
             <button type="submit" className="btn" id="send-btn" aria-busy={sending}>
-              {sending ? 'Sending code...' : <>Continue to booking <ArrowIcon /></>}
+              {sending ? 'Opening secure checkout...' : <><LockIcon />Continue to secure payment · {price}</>}
             </button>
             <button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button>
           </div>
-          <p className="form-fine">We&apos;ll text a 6-digit code to verify your number, then you pick a time for your {inr(offer.consult.price)} session. Your details are only used for this application.</p>
+          <span className="err pay-err" role="alert">{payErr}</span>
+          <p className="form-fine">Secure payment on Razorpay: UPI, cards or netbanking. Right after paying, you pick your time.</p>
         </div>
 
-        {/* Verify phone by OTP */}
-        <div role="group" className={`step${cur === 'verify' ? ' cur' : ''}`} data-step="verify" data-bar={totalBars}>
-          <div className="step-head">
-            <span className="count">One last check</span>
-            <h3 tabIndex={-1}>Verify Your Number</h3>
-            <p>Enter the 6-digit code sent to <b id="otp-to">{sentLabel}</b>. <button type="button" className="link" id="otp-change" onClick={changeNumber}>Change number</button></p>
-          </div>
-          <div className={`otp${otpErr ? ' bad' : ''}`} id="otp">
-            <div className="otp-boxes" role="group" aria-label="6-digit verification code">
-              {digits.map((d, k) => (
-                <input key={k} className="otp-d" inputMode="numeric" autoComplete={k === 0 ? 'one-time-code' : 'off'} aria-label={`Digit ${k + 1} of 6`}
-                  ref={(el) => { digitRefs.current[k] = el; }} value={d}
-                  onChange={(e) => onDigit(k, e.target.value)} onKeyDown={(e) => onDigitKey(k, e)}
-                  onPaste={(e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); fillFrom(k, e.clipboardData.getData('text')); }}
-                  onFocus={(e) => e.target.select()} />
-              ))}
-            </div>
-            <span className="err" id="otp-err" role="alert">{otpErr}</span>
-            <p className="otp-resend">Didn&apos;t get it? <button type="button" className="link" id="otp-resend" disabled={resendIn > 0 || resending} onClick={resend}>
-              {resending ? 'Sending...' : resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
-            </button></p>
-            <p className="otp-demo" id="otp-demo" hidden={!demoCode}>Demo mode: use code {demoCode || '123456'}</p>
-          </div>
-          <div className="step-foot">
-            <button type="submit" className="btn" id="verify-btn" aria-busy={verifyLabel !== 'Verify and submit'}>{verifyLabel}</button>
-            <button type="button" className="back" data-back="" onClick={back}><BackIcon />Back</button>
-          </div>
+        {/* Handing over to Razorpay */}
+        <div className={`result pay${cur === 'pay' ? ' cur' : ''}`} data-result="pay" role="status" aria-live="polite">
+          <span className="pay-orb" aria-hidden="true"><LockIcon /></span>
+          <h3 tabIndex={-1}>Taking You To Secure Checkout</h3>
+          <p><b>{price}</b> · {offer.consult.name}, 30 minutes with our CEO</p>
+          <ol className="pay-steps">
+            <li><b>Pay on Razorpay</b><span>UPI, cards or netbanking. Your details are already filled in.</span></li>
+            <li><b>Come straight back here</b><span>and pick a time that suits you.</span></li>
+          </ol>
+          {payDemo && <p className="otp-demo">Demo mode: no real payment is taken.</p>}
+          <a className="pay-fallback" href={payUrl || '#'}>Not moving? Continue to payment</a>
         </div>
 
         {/* Not a fit (text per gate) */}

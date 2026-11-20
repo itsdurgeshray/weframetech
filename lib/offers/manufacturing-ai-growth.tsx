@@ -249,15 +249,6 @@ export const manufacturingAiGrowth: Offer = {
     bookingUrl: process.env.NEXT_PUBLIC_MFG_AI_BOOKING_URL || site.bookingUrl,
   },
   thankYou: {
-    badge: "Application received. You're one step closer.",
-    ledes: [
-      "We've received your application. Based on your answers, your manufacturing business may be a good fit for our growth partnership.",
-      'A member of the WeframeTech team will review your application and reach out within 24 hours.',
-    ],
-    book: [
-      <>Don&apos;t wait for our team to reach out. Choose a convenient time to speak with us and explore how you can scale your manufacturing business toward <b>₹100 Cr/year</b>.</>,
-      "On the call, we'll discuss your current revenue, operational challenges, customer acquisition, manual processes, technology requirements, and growth goals.",
-    ],
     next: [
       { title: 'We Review Your Application', text: 'Our team reviews your manufacturing business, products, current revenue, operational challenges, customer acquisition and growth goals.' },
       { title: 'Strategy Call', text: 'We discuss your current systems, manual processes, B2B inquiry generation, customer experience and the opportunities we see to improve efficiency and revenue.' },

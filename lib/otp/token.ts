@@ -3,8 +3,8 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /**
  * Short-lived proof that a phone number passed OTP verification.
- * /api/otp/verify issues it; /api/lead only accepts leads that carry a valid one,
- * so a lead can't claim a verified phone without going through the code step.
+ * /api/otp/verify issues it. Not used by the current form (payment confirms the number);
+ * kept for flows that want phone verification before saving a lead.
  */
 const TTL_MS = 30 * 60 * 1000;
 

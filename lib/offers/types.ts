@@ -84,10 +84,8 @@ export type Offer = {
   stickyNote: string;
   qualifier: QualifierConfig;
   consult: Consult;
+  /** after-payment page (Razorpay returns here) */
   thankYou: {
-    badge: string;
-    ledes: ReactNode[];
-    book: ReactNode[];
     next: Step[];
     ready: { title: string; body: ReactNode };
   };

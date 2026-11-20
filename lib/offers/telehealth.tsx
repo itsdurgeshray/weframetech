@@ -107,15 +107,6 @@ export const telehealth: Offer = {
     bookingUrl: process.env.NEXT_PUBLIC_TELEHEALTH_BOOKING_URL || site.bookingUrl,
   },
   thankYou: {
-    badge: "Application received. You're one step closer.",
-    ledes: [
-      "We've received your application. Based on your answers, you may be a good fit for our healthcare venture partnership.",
-      'A member of the WeframeTech team will review your application and reach out within 24 hours.',
-    ],
-    book: [
-      "Don't wait for our team to reach out. Choose a convenient time to speak with us and explore your healthcare business opportunity.",
-      "On the call, we'll discuss your business idea, revenue goals, investment, and how we can help you build and launch.",
-    ],
     next: [
       { title: 'We Review Your Application', text: 'Our team reviews your healthcare experience, business goals, investment readiness, and answers.' },
       { title: 'Strategy Call', text: 'We discuss your idea, business model, revenue ambition, and the opportunity we see for your venture.' },

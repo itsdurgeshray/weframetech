@@ -13,7 +13,7 @@ const Check = () => (
  * The paid strategy session: headline, price, deliverables.
  * Dark teal card; inside the apply rail it turns translucent. `detailed` adds a line under each deliverable.
  */
-export function OfferPanel({ consult, detailed = false, className = '', children }: { consult: Consult; detailed?: boolean; className?: string; children?: ReactNode }) {
+export function OfferPanel({ consult, detailed = false, paid = false, className = '', children }: { consult: Consult; detailed?: boolean; paid?: boolean; className?: string; children?: ReactNode }) {
   return (
     <div className={`offer ${className}`}>
       <div className="of-head">
@@ -22,7 +22,7 @@ export function OfferPanel({ consult, detailed = false, className = '', children
       </div>
       <div className="of-price">
         <b>{inr(consult.price)}</b>
-        <span>One-time fee<br />Qualified applicants only</span>
+        {paid ? <span>Paid in full<br />Now pick your time</span> : <span>One-time fee<br />Qualified applicants only</span>}
       </div>
       <ul className="of-list" aria-label="What you walk away with">
         {consult.includes.map((it) => (
@@ -32,20 +32,20 @@ export function OfferPanel({ consult, detailed = false, className = '', children
           </li>
         ))}
       </ul>
-      <p className="of-why">The fee keeps our CEO&apos;s calendar for serious founders. Everything above is yours to keep, whether or not we work together.</p>
+      {!paid && <p className="of-why">The fee keeps our CEO&apos;s calendar for serious founders. Everything above is yours to keep, whether or not we work together.</p>}
       {children}
     </div>
   );
 }
 
-/** One-line reminder on the form's final step (the full card is in the rail, or below the form on phones). */
+/** Reminder on the form's final step (the full card is in the rail, or below the form on phones). */
 export function NextStepNote({ consult }: { consult: Consult }) {
   return (
     <div className="c-next">
       <span className="c-next-ico" aria-hidden="true">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M16 3v4M8 3v4M3 10h18" /></svg>
       </span>
-      <p>Next, pick a time for your <b>30-min session with our CEO</b></p>
+      <p>Last step: secure your <b>30-min session with our CEO</b>, then pick your time</p>
       <b className="c-next-price">{inr(consult.price)}</b>
     </div>
   );

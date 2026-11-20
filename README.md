@@ -27,21 +27,79 @@ app/
   thank-you/            thank-you route + its own stylesheet
   api/otp/send          POST { phone, resend? }      -> sends the code via the active provider
   api/otp/verify        POST { phone, code }         -> { verified, token }
-  api/lead              POST { lead, token }         -> forwards verified leads to LEAD_WEBHOOK_URL
+  api/checkout          POST { lead }                -> saves the lead, returns a Razorpay payment link
+  api/payment/verify    POST { razorpay_* params }   -> paid / unpaid / invalid
+  api/razorpay/webhook  POST (Razorpay)              -> records payment_link.paid
 components/
   home/                 static sections (Hero, QualifySection, Clients, HowItWorks, Team, Testimonials, Closing, Footer)
-  qualifier/            the 6-question gated form, details step, OTP verify step
+  qualifier/            the gated form, details step, checkout handoff
   ui/                   Nav, QualifyLink, VideoPlayer, Marquee, Timeline, StickyBar, Reveal
-  thank-you/            BookingCta, LeadSummary
+  thank-you/            after-payment page (SessionStatus: paid / unpaid / no session)
+  consult/              session card, final-step note, trust strip
 lib/
   qualifier.ts          questions, branches, Not a Fit gates (edit copy here)
   site.ts               public settings from NEXT_PUBLIC_* env
   phone.ts              country codes + E.164 helpers
-  otp/                  provider layer (see below)
+  razorpay.ts, leads.ts  payment links + lead events (server only)
+  otp/                  optional phone OTP providers (not used by the form)
 public/assets/          images and logos
 ```
 
-## Phone OTP providers
+## Videos
+
+Each offer has a hero VSL and an explainer, both YouTube IDs (see `.env.example`). Telehealth defaults to
+`iHkaJAG2Ans`, the video on healthcare.weframetech.com. The poster is the video's YouTube thumbnail and the
+video plays in place on click. Videos must allow embedding. The form is always open (no watch-time lock).
+
+## Paid strategy session
+
+Qualified visitors pay for a 30-minute session with the CEO, then pick a time:
+
+| Offer | Price | Calendar env (shown after payment) |
+| --- | --- | --- |
+| Telehealth | ₹499 | `NEXT_PUBLIC_TELEHEALTH_BOOKING_URL` |
+| Manufacturing sales channel | ₹99 | `NEXT_PUBLIC_MFG_SALES_BOOKING_URL` |
+| Manufacturing AI growth | ₹199 | `NEXT_PUBLIC_MFG_AI_BOOKING_URL` |
+
+Any offer without its own calendar uses `NEXT_PUBLIC_BOOKING_URL`. Price, name and inclusions live in `consult`
+in each `lib/offers/<slug>.tsx`; the shared inclusions are in `lib/offers/consult.ts`.
+
+The qualify section is one apply panel: a dark "how it works" rail (the 3 steps, which light up as the visitor
+moves through the form, plus the session card) beside the form, with client logos and proof (`TrustStrip`) at
+the foot of the form. The offer's eligibility `note` sits below the panel. On phones the rail becomes a compact
+stepper above the form and the session card moves below it. Code: `components/home/QualifySection.tsx`, `components/consult/`.
+
+### Razorpay setup
+
+1. Razorpay Dashboard > API keys: set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` (test keys first).
+2. Dashboard > Webhooks: add `https://<your-domain>/api/razorpay/webhook`, event `payment_link.paid`, and put the
+   secret in `RAZORPAY_WEBHOOK_SECRET`.
+3. Set the calendar links above and `LEAD_WEBHOOK_URL`. Redeploy.
+
+Without keys everything runs in demo mode: the form skips Razorpay and the thank-you page shows the paid state
+with a "Demo mode" note. Code: `lib/razorpay.ts`, `app/api/checkout`, `app/api/payment/verify`, `app/api/razorpay/webhook`.
+
+## Lead flow
+
+1. The visitor passes the gates and enters name, phone, email (and company/website/contact preference per offer).
+2. `/api/checkout` sends `lead.qualified` (unpaid) to `LEAD_WEBHOOK_URL`, then creates a Razorpay Payment Link
+   pre-filled with their details. A short "Taking you to secure checkout" screen hands over to Razorpay.
+   Razorpay also texts/emails the link, and sends reminders, so drop-offs can come back.
+3. Razorpay returns to `/<offer>/thank-you`. `/api/payment/verify` checks the signature and the link's real status:
+   - paid: receipt, then the calendar (pre-filled) to pick a time, then what happens next;
+   - not paid: "Try payment again" with the same link; answers are kept.
+4. `payment.paid` is sent to `LEAD_WEBHOOK_URL` from the return and from the Razorpay webhook (dedupe on `payment_id`),
+   so a payment is recorded even if the tab is closed.
+5. "Back" from Razorpay reopens the form on the details step with everything filled in (sessionStorage).
+
+## Notes
+
+- `?figma` on any URL renders a static version (no motion, every form screen visible) for importing into Figma.
+- Season Mix is a trial font; buy a webfont licence before launch.
+
+## Phone OTP (optional)
+
+The form no longer asks for an OTP: payment confirms the number. The provider layer is kept if you want it back.
 
 All providers implement one interface (`lib/otp/types.ts`) and are picked by `OTP_PROVIDER`:
 
@@ -64,40 +122,3 @@ Endpoints and response handling live in `lib/otp/providers/msg91.ts`; check them
 
 Create `lib/otp/providers/<name>.ts` exporting an `OtpProvider`, then register it in `lib/otp/index.ts`.
 
-## Videos
-
-Each offer has a hero VSL and an explainer, both YouTube IDs (see `.env.example`). Telehealth defaults to
-`iHkaJAG2Ans`, the video on healthcare.weframetech.com. The poster is the video's YouTube thumbnail and the
-video plays in place on click. Videos must allow embedding. The form is always open (no watch-time lock).
-
-## Paid strategy session
-
-Qualified visitors book a paid 30-minute session with the CEO:
-
-| Offer | Price | Booking link env |
-| --- | --- | --- |
-| Telehealth | ₹499 | `NEXT_PUBLIC_TELEHEALTH_BOOKING_URL` |
-| Manufacturing sales channel | ₹99 | `NEXT_PUBLIC_MFG_SALES_BOOKING_URL` |
-| Manufacturing AI growth | ₹199 | `NEXT_PUBLIC_MFG_AI_BOOKING_URL` |
-
-Any offer without its own link uses `NEXT_PUBLIC_BOOKING_URL`. Payment is taken by the booking tool
-(e.g. a paid Cal.com event or a Razorpay page). Price, name and inclusions live in `consult` in each
-`lib/offers/<slug>.tsx`; the shared inclusions are in `lib/offers/consult.ts`.
-
-The qualify section is one apply panel: a dark "how it works" rail (the 3 steps, which light up as the visitor
-moves through the form, plus the session card) beside the form, with client logos and proof (`TrustStrip`) at
-the foot of the form. The offer's eligibility `note` sits below the panel. On phones the rail becomes a compact
-stepper above the form and the session card moves below it. The thank-you page shows the same card with the
-booking button. Code: `components/home/QualifySection.tsx`, `components/consult/`.
-
-## Lead flow
-
-1. The visitor passes the gates and enters name, phone, email, contact preference.
-2. `/api/otp/send` texts the code; `/api/otp/verify` checks it and returns a 30-minute signed token.
-3. `/api/lead` accepts the lead only with a valid token, so every lead has a verified phone, then forwards it to `LEAD_WEBHOOK_URL`.
-4. The browser goes to the offer's thank-you page, which shows the answers, what the paid session includes and the booking button.
-
-## Notes
-
-- `?figma` on any URL renders a static version (no motion, every form screen visible) for importing into Figma.
-- Season Mix is a trial font; buy a webfont licence before launch.

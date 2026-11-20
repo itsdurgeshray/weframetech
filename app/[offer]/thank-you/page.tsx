@@ -7,7 +7,7 @@ import '../../thank-you/thank-you.css';
 export const dynamicParams = false;
 export const generateStaticParams = () => OFFERS.map((o) => ({ offer: o.slug }));
 
-export const metadata: Metadata = { title: 'Thank You | WeframeTech', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Your Strategy Session | WeframeTech', robots: { index: false, follow: false } };
 
 export default async function Page({ params }: { params: Promise<{ offer: string }> }) {
   const offer = getOffer((await params).offer);

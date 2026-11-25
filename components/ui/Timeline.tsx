@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
  * "How Our Partnership Works". The line fills with scroll and each node activates as the fill reaches it.
  * Horizontal on desktop, vertical (line from node 1 to node 5 only) at 820px and below.
  */
-export default function Timeline({ steps }: { steps: { title: string; text: string }[] }) {
+export default function Timeline({ steps, label = 'Step', labelledBy = 'p-title' }: { steps: { title: string; text: string }[]; label?: string; labelledBy?: string }) {
   const tlRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLElement>(null);
   const nodeRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -58,12 +58,12 @@ export default function Timeline({ steps }: { steps: { title: string; text: stri
   return (
     <div className="tl rv d1" ref={tlRef} style={{ '--n': steps.length } as CSSProperties}>
       <div className="tl-track" aria-hidden="true"><i ref={fillRef}></i></div>
-      <ol aria-labelledby="p-title">
+      <ol aria-labelledby={labelledBy}>
         {steps.map((s, k) => (
           <li key={s.title}>
             <div className={`tl-step${k < cur ? ' done' : ''}`} aria-current={k === cur ? 'step' : undefined}>
               <span className="tl-node" aria-hidden="true" ref={(el) => { nodeRefs.current[k] = el; }}>0{k + 1}</span>
-              <span className="tl-txt"><small>Step 0{k + 1}</small><b>{s.title}</b><span>{s.text}</span></span>
+              <span className="tl-txt"><small>{label} 0{k + 1}</small><b>{s.title}</b><span>{s.text}</span></span>
             </div>
           </li>
         ))}

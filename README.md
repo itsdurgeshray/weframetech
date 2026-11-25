@@ -45,6 +45,15 @@ lib/
 public/assets/          images and logos
 ```
 
+## Proposal pages
+
+`/proposal/<slug>` is a private, per-company "$5M Growth Plan" page for the top outbound accounts (not indexed).
+Each company is one entry in `lib/proposals/index.ts`: name, sector, contact, the three research findings,
+USD pricing per outcome and (optionally) the homepage redesign images. The four outcomes, timeline and scope copy
+are shared in `lib/proposals/plan.ts`. The "Build your own plan" section recalculates investment, timeline and ROI
+live and posts to `/api/proposal`, which sends `proposal.submitted` to `LEAD_WEBHOOK_URL`.
+Code: `components/proposal/`, `app/proposal/`.
+
 ## Videos
 
 Each offer has a hero VSL and an explainer, both YouTube IDs (see `.env.example`). Telehealth defaults to
